@@ -1,0 +1,3125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>표창 도적의 모험 - 30성 스타포스 & LP BGM 언락 (MapleShuriken RPG)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+    
+    .pixel-font {
+      font-family: 'VT323', monospace, sans-serif;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    .maple-btn {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      border: 2px solid #fbbf24;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+      transition: all 0.1s ease;
+    }
+    .maple-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .maple-btn:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    .maple-btn-blue {
+      background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+      border: 2px solid #60a5fa;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .maple-btn-blue:hover { filter: brightness(1.1); }
+
+    .maple-btn-red {
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+      border: 2px solid #f87171;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .maple-btn-red:hover { filter: brightness(1.1); }
+
+    .maple-btn-purple {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      border: 2px solid #a78bfa;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .maple-btn-purple:hover { filter: brightness(1.1); }
+
+    .maple-btn-gold {
+      background: linear-gradient(180deg, #fbbf24 0%, #b45309 100%);
+      border: 2px solid #fef08a;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .maple-btn-gold:hover { filter: brightness(1.15); }
+
+    canvas {
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-2 sm:p-4">
+
+  <header class="w-full max-w-4xl bg-slate-800/90 border-2 border-slate-600 rounded-xl p-3 mb-3 shadow-xl backdrop-blur-sm">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <!-- Visual Avatar with Dynamic Equipment Icons -->
+        <div id="player-avatar-box" class="w-14 h-14 bg-slate-900 border-2 border-amber-400 rounded-xl flex items-center justify-center text-3xl shadow-inner relative">
+          <span id="avatar-body-icon">🥷</span>
+          <span id="avatar-hat-badge" class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm">👒</span>
+          <span id="avatar-weapon-badge" class="absolute -bottom-1 -right-1 text-xs bg-slate-950/80 px-1 rounded border border-amber-500/50">🥊</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="player-job" class="text-xs font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded">표창 도적</span>
+            <span id="player-level" class="text-sm font-black text-amber-400">Lv. 1</span>
+            <span id="player-title" class="text-[11px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.2 rounded font-semibold">초보 도적</span>
+          </div>
+          <div class="text-xs text-slate-300 mt-0.5">
+            스탯공격력: <span id="player-stat-atk" class="text-emerald-400 font-bold">15 - 20</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-0.5 flex gap-2">
+            <span>LUK: <span id="player-luk-val" class="text-amber-300 font-bold">10</span></span>
+            <span>DEX: <span id="player-dex-val" class="text-sky-300 font-bold">10</span></span>
+            <span>🎯 명중률: <span id="player-acc-val" class="text-emerald-300 font-bold">20</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio Controls & EXP Bar -->
+      <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3">
+        <div class="flex flex-col gap-1">
+          <!-- BGM Playlist & Toggle -->
+          <div class="bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-lg flex items-center gap-2 text-[11px]">
+            <button id="btn-bgm-toggle" onclick="toggleBGM()" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-amber-300 font-bold flex items-center gap-1">
+              <span id="bgm-icon">🎵</span>
+              <span id="bgm-text">BGM 재생</span>
+            </button>
+            <select id="bgm-selector" onchange="changeBGMTrack(this.value)" class="bg-slate-950 border border-slate-700 text-amber-200 rounded px-1 text-[11px]">
+              <option value="kerning">커닝시티 (기본)</option>
+              <option value="henesys" id="opt-henesys" disabled>🍄 헤네시스 (100억 봉인해제)</option>
+              <option value="elnath" id="opt-elnath" disabled>❄️ 엘나스 (200억 봉인해제)</option>
+              <option value="ludi" id="opt-ludi" disabled>🧸 루디브리엄 (500억 봉인해제)</option>
+              <option value="horntail" id="opt-horntail" disabled>🐉 혼테일 성역 (1000억 봉인해제)</option>
+            </select>
+            <input type="range" id="bgm-volume" min="0" max="1" step="0.05" value="0.3" onchange="setBGMVolume(this.value)" oninput="setBGMVolume(this.value)" class="w-12 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400" title="BGM 볼륨">
+          </div>
+          <!-- SFX Toggle & Slider -->
+          <div class="bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-lg flex items-center gap-2 text-[11px]">
+            <button id="btn-sfx-toggle" onclick="toggleSFX()" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-emerald-300 font-bold flex items-center gap-1">
+              <span id="sfx-icon">🔊</span>
+              <span id="sfx-text">효과음</span>
+            </button>
+            <input type="range" id="sfx-volume" min="0" max="1" step="0.05" value="0.5" onchange="setSFXVolume(this.value)" oninput="setSFXVolume(this.value)" class="w-14 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400" title="효과음 볼륨">
+          </div>
+        </div>
+
+        <div class="w-40 sm:w-48">
+          <div class="flex justify-between text-[11px] text-slate-300 mb-0.5">
+            <span>EXP</span>
+            <span id="exp-text">0 / 100 (0%)</span>
+          </div>
+          <div class="w-full bg-slate-900 h-3 border border-slate-700 rounded-full overflow-hidden p-0.5">
+            <div id="exp-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-amber-500/30 px-3 py-1.5 rounded-lg flex items-center gap-2">
+          <span class="text-amber-400">💰</span>
+          <span id="player-meso" class="text-sm font-bold text-amber-300 pixel-font tracking-wider">0 메소</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Buffs Bar -->
+    <div class="mt-2 pt-2 border-t border-slate-700/60 flex flex-wrap justify-between items-center text-xs gap-2">
+      <div id="buff-bar" class="flex flex-wrap gap-1.5">
+        <span id="buff-cider" class="hidden px-2 py-0.5 bg-amber-900/60 text-amber-200 border border-amber-600/50 rounded-full">🍾 사이다 버프 (+15 공)</span>
+        <span id="buff-exp" class="hidden px-2 py-0.5 bg-emerald-900/60 text-emerald-200 border border-emerald-600/50 rounded-full">⚡ 경험치 2배 쿠폰</span>
+        <span id="buff-drop" class="hidden px-2 py-0.5 bg-purple-900/60 text-purple-200 border border-purple-600/50 rounded-full">🔮 드롭률 2배 쿠폰</span>
+        <span id="buff-endless" class="hidden px-2 py-0.5 bg-red-900/80 text-red-200 border border-red-500 rounded-full font-bold animate-pulse">🔥 심층 층수 버프</span>
+        <span id="active-title-buff" class="px-2 py-0.5 bg-sky-900/60 text-sky-200 border border-sky-600/50 rounded-full">👑 칭호 효과 활성화</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span id="save-indicator" class="text-[11px] text-emerald-400 font-medium">💾 실시간 자동 저장 중</span>
+        <button onclick="resetGameProgress()" class="px-2 py-0.5 bg-red-950 hover:bg-red-900 border border-red-700 text-red-300 rounded text-[10px]">데이터 초기화</button>
+      </div>
+    </div>
+  </header>
+
+  <audio id="game-bgm" loop preload="auto">
+    <source src="KerningCity.mp3" type="audio/mpeg">
+    <source src="https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/KerningCity.mp3" type="audio/mpeg">
+  </audio>
+
+  <main class="w-full max-w-4xl flex flex-col gap-3">
+    
+    <div class="relative w-full bg-slate-950 border-2 border-slate-700 rounded-xl overflow-hidden shadow-2xl flex flex-col items-center">
+      <div class="w-full bg-slate-900/90 px-3 py-2 border-b border-slate-800 flex justify-between items-center text-xs sm:text-sm">
+        <div class="flex items-center gap-2">
+          <span id="stage-title" class="font-bold text-amber-400">🌲 리스항구 해안가</span>
+          <span id="stage-req-lv" class="text-slate-400 text-[11px]">(권장 Lv. 1)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="monster-info" class="text-slate-300 font-medium">🐌 달팽이 (EXP: 10 / 메소: 10)</span>
+          <button id="btn-show-bg-selector" onclick="showBgSelectorModal()" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[11px] text-emerald-300 font-bold">
+            🌄 배경 설정
+          </button>
+          <button id="btn-show-file-list" onclick="showFileListModal()" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[11px] text-amber-300 font-bold">
+            📁 파일명 안내
+          </button>
+          <button id="btn-show-drops" onclick="showDropModal()" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[11px] text-sky-300">
+            🔍 드롭 정보
+          </button>
+        </div>
+      </div>
+      
+      <!-- Main Canvas -->
+      <canvas id="gameCanvas" width="800" height="260" class="w-full h-48 sm:h-64 cursor-pointer touch-none"></canvas>
+      
+      <div class="absolute top-12 left-3 bg-slate-900/80 border border-slate-700/80 px-2 py-1 rounded text-[11px] text-slate-300">
+        🖱️ 클릭: 일반 공격 | ⌨️ 영문 키 연타: 스킬 연사
+      </div>
+
+      <!-- Typing Queue & Wisdom Burst Bar -->
+      <div class="w-full bg-slate-900 border-t border-slate-800 p-2 sm:p-3 flex flex-col gap-2 items-center">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="text-xs text-amber-400 font-bold hidden sm:inline">단속 스킬 키:</span>
+          <div id="typing-queue" class="flex gap-2"></div>
+        </div>
+
+        <div class="w-full max-w-2xl bg-slate-950 border border-purple-500/40 rounded-lg p-2 flex flex-col sm:flex-row items-center gap-2 mt-1">
+          <div class="text-[11px] text-purple-300 font-bold whitespace-nowrap flex items-center gap-1 shrink-0">
+            <span>🧠 지식 & 상식 타자 폭격:</span>
+          </div>
+          <div id="wisdom-target-text" class="text-xs text-amber-200 font-medium text-center sm:text-left select-none w-full sm:w-auto flex-1 break-words leading-snug">
+            여호와는 나의 목자시니 내게 부족함이 없으리로다
+          </div>
+          <input type="text" id="wisdom-input" placeholder="위 상식을 입력 후 Enter!" class="w-full sm:w-56 px-2 py-1 bg-slate-900 border border-purple-500/50 rounded text-xs text-white focus:outline-none focus:border-purple-400 placeholder-slate-500 shrink-0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap gap-1 border-b border-slate-700 pb-2">
+      <button class="tab-btn maple-btn px-3 py-1.5 rounded-t-lg text-xs font-bold text-white" data-tab="tab-stage">🌲 사냥터 / 보스</button>
+      <button class="tab-btn maple-btn-blue px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-inventory">🎒 인벤토리</button>
+      <button class="tab-btn maple-btn-purple px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-shop">🏪 상점 & LP판</button>
+      <button class="tab-btn maple-btn-red px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-scroll">📜 주문서 상점 & 강화</button>
+      <button class="tab-btn maple-btn-gold px-3 py-1.5 rounded-t-lg text-xs font-bold text-slate-950 opacity-60" data-tab="tab-starforce">⭐ 30성 스타포스</button>
+      <button class="tab-btn maple-btn-blue px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-skills">📊 스탯 / 스킬</button>
+      <button class="tab-btn maple-btn-purple px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-endless">⚔️ 심층 & 블랙마켓</button>
+      <button class="tab-btn maple-btn px-3 py-1.5 rounded-t-lg text-xs font-bold text-white opacity-60" data-tab="tab-achieve">🏆 업적 & 칭호 도감</button>
+    </div>
+
+    <div class="bg-slate-800/80 border border-slate-700 rounded-b-xl rounded-tr-xl p-3 min-h-[220px]">
+      
+      <!-- TAB 1: Stage & Boss -->
+      <div id="tab-stage" class="tab-content flex flex-col gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-amber-400 mb-2">🌲 사냥터 (명중률 미달 시 MISS가 발생할 수 있습니다!)</h3>
+          <div id="stage-grid" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto custom-scroll pr-1"></div>
+        </div>
+        <div class="border-t border-slate-700 pt-2">
+          <h3 class="text-xs font-bold text-red-400 mb-2">👹 보스 레이드 (고레벨 보스는 높 회피율 보유!)</h3>
+          <div id="boss-grid" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto custom-scroll pr-1"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Inventory -->
+      <div id="tab-inventory" class="tab-content hidden flex flex-col gap-3">
+        <div class="flex flex-wrap justify-between items-center border-b border-slate-700 pb-2 gap-2">
+          <div class="flex gap-1">
+            <button id="inv-tab-eq" class="px-3 py-1 rounded bg-amber-500 text-slate-950 font-bold text-xs">🥊 장비</button>
+            <button id="inv-tab-use" class="px-3 py-1 rounded bg-slate-700 text-slate-300 font-bold text-xs">✴️ 표창 / 소비</button>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-300 flex items-center gap-1 cursor-pointer select-none">
+              <input type="checkbox" id="chk-multi-sell" class="rounded accent-amber-500">
+              <span>🛒 다중 선택 판매</span>
+            </label>
+            <button id="btn-select-all" class="hidden px-2 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-500 rounded text-[11px] text-amber-300 font-bold">✅ 전체 선택</button>
+            <button id="btn-sell-selected" class="hidden maple-btn-red px-2 py-1 rounded text-[11px] text-white font-bold">💰 선택 일괄 판매</button>
+          </div>
+        </div>
+
+        <div id="inventory-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 min-h-[140px] max-h-60 overflow-y-auto custom-scroll p-1 bg-slate-950/60 rounded-lg border border-slate-800"></div>
+      </div>
+
+      <!-- TAB 3: Shop & LP BGM -->
+      <div id="tab-shop" class="tab-content hidden flex flex-col gap-3">
+        <div class="border-b border-slate-700 pb-3">
+          <h3 class="text-xs font-bold text-amber-400 mb-2">💿 메이플 BGM 봉인해제 LP판 상점 (100억 메소 이상 달성 시 언락 가능)</h3>
+          <p class="text-[11px] text-slate-300 mb-2">누적 메소를 사용하여 전설적인 메이플 브금 LP판을 구매하고 감상하세요!</p>
+          <div id="lp-shop-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="border-b border-slate-700 pb-2">
+          <h3 class="text-xs font-bold text-amber-400 mb-2">🏪 아대 전문 상점</h3>
+          <div id="shop-weapon-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto custom-scroll"></div>
+        </div>
+
+        <div class="pt-1">
+          <h3 class="text-xs font-bold text-amber-400 mb-2">🧪 잡화 / 버프 쿠폰</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="p-2 bg-slate-900 border border-slate-700 rounded flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-amber-300">🍾 사이다</div>
+                <div class="text-[10px] text-slate-400">30초간 공격력 +15</div>
+                <div class="text-amber-400 font-bold mt-0.5">5,000 메소</div>
+              </div>
+              <button onclick="buyShopBuff('cider', 5000)" class="maple-btn px-2.5 py-1 rounded text-white font-bold">구매</button>
+            </div>
+            <div class="p-2 bg-slate-900 border border-slate-700 rounded flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-emerald-300">⚡ 경험치 2배 쿠폰</div>
+                <div class="text-[10px] text-slate-400">60초간 경험치 2배</div>
+                <div class="text-amber-400 font-bold mt-0.5">50,000 메소</div>
+              </div>
+              <button onclick="buyShopBuff('exp', 50000)" class="maple-btn-blue px-2.5 py-1 rounded text-white font-bold">구매</button>
+            </div>
+            <div class="p-2 bg-slate-900 border border-slate-700 rounded flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-purple-300">🔮 드롭률 2배 쿠폰</div>
+                <div class="text-[10px] text-slate-400">60초간 드롭률 2배</div>
+                <div class="text-amber-400 font-bold mt-0.5">100,000 메소</div>
+              </div>
+              <button onclick="buyShopBuff('drop', 100000)" class="maple-btn-purple px-2.5 py-1 rounded text-white font-bold">구매</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Scroll Shop & Enchants -->
+      <div id="tab-scroll" class="tab-content hidden flex flex-col gap-3">
+        <div class="text-xs text-slate-300">
+          📜 주문서를 메소로 직접 구매하거나 장착한 장비에 질러서 강화하세요! <span class="text-emerald-400 font-bold">(실패 시 옵션은 유지됩니다)</span>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700">
+            <h4 class="text-xs font-bold text-amber-400 mb-2">📜 아대 공격력 주문서 (아공) 상점</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-sky-300 font-bold">아공 60% (+2공)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 5,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-agong60">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('agong60', 5000000)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('agong', 60, 2)" class="maple-btn-blue flex-1 py-1 rounded font-bold">지르기</button>
+                </div>
+              </div>
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-red-400 font-bold">아공 10% (+5공)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 25,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-agong10">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('agong10', 25000000)" class="bg-slate-800 hover:bg-slate-700 text-red-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('agong', 10, 5)" class="maple-btn-red flex-1 py-1 rounded font-bold">대박!</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700">
+            <h4 class="text-xs font-bold text-amber-400 mb-2">📜 장갑 공격력 주문서 (장공) 상점</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-sky-300 font-bold">장공 60% (+1공)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 4,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-janggong60">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('janggong60', 4000000)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('janggong', 60, 1)" class="maple-btn-blue flex-1 py-1 rounded font-bold">지르기</button>
+                </div>
+              </div>
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-red-400 font-bold">장공 10% (+3공)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 20,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-janggong10">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('janggong10', 20000000)" class="bg-slate-800 hover:bg-slate-700 text-red-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('janggong', 10, 3)" class="maple-btn-red flex-1 py-1 rounded font-bold">대박!</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700">
+            <h4 class="text-xs font-bold text-amber-400 mb-2">📜 투구 행운 주문서 (투행) 상점</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-sky-300 font-bold">투행 60% (+2 LUK)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 3,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-tuhaeng60">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('tuhaeng60', 3000000)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('tuhaeng', 60, 2)" class="maple-btn-blue flex-1 py-1 rounded font-bold">지르기</button>
+                </div>
+              </div>
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-red-400 font-bold">투행 10% (+5 LUK)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 15,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-tuhaeng10">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('tuhaeng10', 15000000)" class="bg-slate-800 hover:bg-slate-700 text-red-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('tuhaeng', 10, 5)" class="maple-btn-red flex-1 py-1 rounded font-bold">대박!</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-700">
+            <h4 class="text-xs font-bold text-amber-400 mb-2">📜 전신갑옷 행운 주문서 (전행) 상점</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-sky-300 font-bold">전행 60% (+2 LUK)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 3,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-jeonhaeng60">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('jeonhaeng60', 3000000)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('jeonhaeng', 60, 2)" class="maple-btn-blue flex-1 py-1 rounded font-bold">지르기</button>
+                </div>
+              </div>
+              <div class="p-2 bg-slate-950 border border-slate-800 rounded flex flex-col justify-between">
+                <div>
+                  <span class="text-red-400 font-bold">전행 10% (+5 LUK)</span><br>
+                  <span class="text-amber-400 font-bold mt-1">가격: 15,000,000 메소</span><br>
+                  <span class="text-slate-400 text-[10px]">보유: <span id="cnt-jeonhaeng10">0</span>개</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button onclick="buyScrollItem('jeonhaeng10', 15000000)" class="bg-slate-800 hover:bg-slate-700 text-red-300 font-bold px-2 py-1 rounded text-[11px]">구매</button>
+                  <button onclick="useScroll('jeonhaeng', 10, 5)" class="maple-btn-red flex-1 py-1 rounded font-bold">대박!</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Hardcore 30-Starforce -->
+      <div id="tab-starforce" class="tab-content hidden flex flex-col gap-3">
+        <div class="flex flex-wrap justify-between items-center border-b border-slate-700 pb-2 gap-2">
+          <div>
+            <h3 class="text-xs font-bold text-amber-400">⭐ 30성 극한 스타포스 강화 (지옥 난이도 개편)</h3>
+            <span class="text-[10px] text-slate-400">※ 20성 이상부터는 성공 확률이 1~3%로 대폭 하향되며 요구 비용이 크게 증가합니다.</span>
+          </div>
+          <div class="flex gap-1 text-xs">
+            <button onclick="selectStarTarget('weapon')" id="star-btn-weapon" class="px-2 py-1 rounded bg-amber-500 text-slate-950 font-bold">🥊 아대</button>
+            <button onclick="selectStarTarget('shuriken')" id="star-btn-shuriken" class="px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">✴️ 표창</button>
+            <button onclick="selectStarTarget('hat')" id="star-btn-hat" class="px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">👒 모자</button>
+            <button onclick="selectStarTarget('body')" id="star-btn-body" class="px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">🥋 한벌</button>
+            <button onclick="selectStarTarget('glove')" id="star-btn-glove" class="px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">🧤 장갑</button>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-amber-500/40 p-4 rounded-lg flex flex-col items-center justify-center gap-3">
+          <div id="star-item-name" class="text-sm font-bold text-amber-300">강화할 장비를 장착하세요</div>
+          <div id="star-stars-display" class="text-xl sm:text-2xl font-black text-amber-400 tracking-wider text-center">☆☆☆☆☆ (0성)</div>
+          <div id="star-stat-info" class="text-xs text-slate-300">현재 보너스 옵션: +0</div>
+
+          <div class="w-full max-w-sm bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs flex justify-between items-center">
+            <div>성공 확률: <span id="star-success-rate" class="text-emerald-400 font-bold">95%</span></div>
+            <div>비용: <span id="star-cost" class="text-amber-400 font-bold">50,000 메소</span></div>
+          </div>
+
+          <div id="star-shuriken-req" class="text-[11px] text-amber-300/80 hidden">
+            ⚠️ 표창 별 달기 조건: 동일 표창 10개 이상 보유 필요
+          </div>
+
+          <div class="flex gap-2 w-full max-w-sm">
+            <button onclick="doStarforce()" class="maple-btn-gold flex-1 py-2 rounded-lg text-sm font-black text-slate-950">⭐ 스타포스 강행!</button>
+            <button onclick="doMaxStarforce()" class="maple-btn-purple px-4 py-2 rounded-lg text-xs font-black text-white" title="현재 메소가 허용하는 한 즉시 연속 강화">⚡ 10연속 강행</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Skills & Stats with DEX focus -->
+      <div id="tab-skills" class="tab-content hidden flex flex-col gap-3">
+        <div class="bg-slate-900/90 p-3 rounded-lg border border-amber-500/30 flex flex-wrap justify-between items-center gap-2">
+          <div>
+            <div class="text-xs font-bold text-amber-400">📊 캐릭터 스탯 포인트 (AP)</div>
+            <div class="text-[11px] text-slate-300 mt-0.5">남은 포인트: <span id="player-ap" class="text-amber-300 font-bold text-sm">0</span></div>
+          </div>
+          <div class="flex gap-3 text-xs">
+            <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded border border-slate-700">
+              <span class="text-amber-300 font-bold">LUK (공격력): <span id="stat-luk-display">10</span></span>
+              <button onclick="addStatPoint('luk')" class="maple-btn px-2 py-0.5 text-[11px] font-bold text-white rounded">+1</button>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded border border-slate-700">
+              <span class="text-sky-300 font-bold">DEX (명중률): <span id="stat-dex-display">10</span></span>
+              <button onclick="addStatPoint('dex')" class="maple-btn-blue px-2 py-0.5 text-[11px] font-bold text-white rounded">+1</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 p-2.5 rounded border border-slate-700 text-xs text-slate-300">
+          💡 <span class="text-amber-300 font-bold">DEX 1당 명중률 +2 상승!</span> 고레벨 사냥터나 보스 몬스터일수록 기본 회피율이 높으므로, DEX를 찍어 명중률을 확보해야 공격 시 <span class="text-red-400 font-bold">MISS</span>가 뜨지 않습니다!
+        </div>
+
+        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+          <div>
+            <span class="text-xs text-slate-300">남은 스킬 포인트 (SP): </span>
+            <span id="player-sp" class="text-sm font-bold text-amber-400">0</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-amber-300">🎯 럭키 세븐 (Lv. <span id="lv-lucky">1</span>)</div>
+              <div class="text-[10px] text-slate-400">2연속 투척 (데미지: <span id="dmg-lucky">132%</span>)</div>
+            </div>
+            <button onclick="upgradeSkill('lucky')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+
+          <div id="skill-triple-card" class="bg-slate-900 p-3 rounded border border-purple-500/50 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-purple-300 flex items-center gap-1">
+                <span>⚡ 트리플 스로우</span>
+                <span id="triple-book-status" class="text-[10px] px-1.5 py-0.2 bg-purple-900/80 text-purple-200 rounded border border-purple-500/50">🔒 미해금 (보스 드롭)</span>
+              </div>
+              <div class="text-[10px] text-slate-400">럭키 세븐을 대체하여 3연속 투척</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-sky-300">⚡ 헤이스트 (Lv. <span id="lv-haste">0</span>)</div>
+              <div class="text-[10px] text-slate-400">평타 및 자동 공격속도 +<span id="spd-haste">0%</span></div>
+            </div>
+            <button onclick="upgradeSkill('haste')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-red-400">💥 크리티컬 스로우 (Lv. <span id="lv-crit">0</span>)</div>
+              <div class="text-[10px] text-slate-400">크리티컬 확률 <span id="rate-crit">0%</span></div>
+            </div>
+            <button onclick="upgradeSkill('crit')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-purple-300">👥 쉐도우 파트너 (Lv. <span id="lv-shadow">0</span>)</div>
+              <div class="text-[10px] text-slate-400">분신 생성! 추가 데미지 <span id="dmg-shadow">0%</span> (Lv.30+ 해금)</div>
+            </div>
+            <button onclick="upgradeSkill('shadow')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-emerald-300">💰 그리드 (Lv. <span id="lv-grid">0</span>)</div>
+              <div class="text-[10px] text-slate-400">메소 획득량 <span id="mult-grid">100%</span> 증폭</div>
+            </div>
+            <button onclick="upgradeSkill('grid')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-amber-200">🧠 지식 상식 스로우 (Lv. <span id="lv-holy">1</span>)</div>
+              <div class="text-[10px] text-slate-400">상식/성경 입력 시 <span id="cnt-holy">15연속</span> 난사!</div>
+            </div>
+            <button onclick="upgradeSkill('holy')" class="maple-btn px-3 py-1 rounded text-white font-bold">+1</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: Endless Dungeon (Time-attack & 5-min Buff) & Black Market -->
+      <div id="tab-endless" class="tab-content hidden flex flex-col gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Time Attack Endless Dungeon -->
+          <div class="bg-slate-900 p-3 rounded-lg border border-red-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <h4 class="text-xs font-bold text-red-400">⚔️ 무한 심층 던전 (타임어택 챌린지)</h4>
+                <span id="endless-timer-badge" class="hidden text-[10px] px-2 py-0.5 bg-red-950 text-red-300 border border-red-500 rounded font-mono font-bold animate-pulse">⏰ 제한시간: 120초</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mb-2">제한시간 내에 심층 보스를 격파하여 더 높은 층수에 도전하세요!</p>
+              
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 text-xs flex flex-col gap-1 mb-2">
+                <div>현재 도달 심층: <span id="endless-wave-display" class="text-amber-400 font-bold">1 층</span></div>
+                <div class="text-[11px] text-slate-400">💡 층수 클리어 시 <span class="text-amber-300 font-bold">5분간 지속되는 층수 비례 특수 버프</span>가 즉시 부여됩니다!</div>
+                <div id="endless-current-buff-info" class="text-[11px] text-red-300 font-semibold mt-0.5">현재 적용 중인 심층 버프: 없음</div>
+              </div>
+            </div>
+            <button onclick="startEndlessWave()" id="btn-start-endless" class="maple-btn-red w-full py-2 rounded font-bold text-white text-xs">⚔️ 심층 층수 도전 (120초 타임어택)</button>
+          </div>
+
+          <!-- Black Market -->
+          <div class="bg-slate-900 p-3 rounded-lg border border-purple-500/40 flex flex-col justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-purple-400 mb-1">🏪 암시장 (기하급수적 메소 싱크)</h4>
+              <p class="text-[11px] text-slate-300 mb-2">막대한 메소를 소모하여 영구적인 전투 능력을 극한으로 강화하세요 (비용 가파름!)</p>
+              <div class="flex flex-col gap-1.5 text-xs">
+                <div class="bg-slate-950 p-2 rounded border border-slate-800 flex justify-between items-center">
+                  <div>
+                    <div class="font-bold text-amber-300">영구 공격력 연금술 (Lv. <span id="bm-atk-lv">0</span>)</div>
+                    <div class="text-[10px] text-slate-400">상시 공격력 +5 (비용: <span id="bm-atk-cost">1,000,000</span> 메소)</div>
+                  </div>
+                  <button onclick="buyBlackMarket('atk')" class="maple-btn px-2.5 py-1 rounded text-white font-bold text-[11px]">강화</button>
+                </div>
+                <div class="bg-slate-950 p-2 rounded border border-slate-800 flex justify-between items-center">
+                  <div>
+                    <div class="font-bold text-sky-300">영구 LUK 투자 (Lv. <span id="bm-luk-lv">0</span>)</div>
+                    <div class="text-[10px] text-slate-400">상시 LUK +10 (비용: <span id="bm-luk-cost">500,000</span> 메소)</div>
+                  </div>
+                  <button onclick="buyBlackMarket('luk')" class="maple-btn-blue px-2.5 py-1 rounded text-white font-bold text-[11px]">투자</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: Achievements & Starforce Collection Titles -->
+      <div id="tab-achieve" class="tab-content hidden flex flex-col gap-3">
+        <h3 class="text-xs font-bold text-amber-400">🏆 업적 및 각 표창/장비별 20/25/30성 콜렉터 칭호 도감 (장착 시 유효 버프 적용!)</h3>
+        <div id="achievement-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+
+    </div>
+
+    <!-- Log Terminal -->
+    <div class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 h-24 overflow-y-auto custom-scroll text-xs pixel-font font-medium flex flex-col gap-0.5" id="game-log">
+      <div class="text-amber-400">🍁 메이플 표창 도적의 모험에 오신 것을 환영합니다! (DEX 명중/회피 시스템 & 심층 던전 타임어택 업데이트)</div>
+    </div>
+  </main>
+
+  <!-- Background Selector Modal -->
+  <div id="bg-selector-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-slate-900 border-2 border-emerald-500 rounded-xl max-w-md w-full p-4 flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
+        <h3 class="text-sm font-bold text-emerald-400">🌄 사냥터 배경화면 선택</h3>
+        <button onclick="closeBgSelectorModal()" class="text-slate-400 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <div class="text-xs text-slate-300 mb-3">
+        원하시는 사냥터 배경을 선택하세요!
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <button onclick="setCustomBackground('auto')" class="p-2.5 rounded border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-200 font-bold text-left flex items-center gap-2">
+          <span>🌲</span> <span>자동 (사냥터별 기본)</span>
+        </button>
+        <button onclick="setCustomBackground('dark')" class="p-2.5 rounded border border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-300 text-left flex items-center gap-2">
+          <span>🌌</span> <span>다크 캔버스 (기본)</span>
+        </button>
+        <button onclick="setCustomBackground('henesys')" class="p-2.5 rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-amber-300 text-left flex items-center gap-2">
+          <span>🍄</span> <span>헤네시스</span>
+        </button>
+        <button onclick="setCustomBackground('kerning')" class="p-2.5 rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-amber-300 text-left flex items-center gap-2">
+          <span>🏙️</span> <span>커닝시티</span>
+        </button>
+        <button onclick="setCustomBackground('elnath')" class="p-2.5 rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-sky-300 text-left flex items-center gap-2">
+          <span>❄️</span> <span>엘나스</span>
+        </button>
+        <button onclick="setCustomBackground('ludi')" class="p-2.5 rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-purple-300 text-left flex items-center gap-2">
+          <span>🧸</span> <span>루디브리엄</span>
+        </button>
+        <button onclick="setCustomBackground('zakum')" class="p-2.5 rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-red-400 text-left flex items-center gap-2">
+          <span>🔥</span> <span>자쿰의 굴</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- File List Modal -->
+  <div id="file-list-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-slate-900 border-2 border-amber-500 rounded-xl max-w-xl w-full p-4 flex flex-col max-h-[85vh]">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
+        <h3 class="text-sm font-bold text-amber-400">📁 data/ 폴더 이미지 및 BGM 파일명 안내</h3>
+        <button onclick="closeFileListModal()" class="text-slate-400 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      
+      <div class="text-xs text-slate-300 mb-2">
+        `index.html`이 있는 폴더 안에 <code class="text-amber-300 bg-slate-950 px-1 py-0.5 rounded">data</code> 폴더를 만들고 이미지나 음악 파일을 넣으시면 실시간 연동됩니다!
+      </div>
+
+      <div class="overflow-y-auto custom-scroll flex flex-col gap-3 text-xs pr-1">
+        <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+          <div class="font-bold text-emerald-400 mb-1">💿 LP판 및 주문서 이미지 (`data/`)</div>
+          <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-300 font-mono">
+            <span>lp_henesys.png, lp_elnath.png</span>
+            <span>lp_ludi.png, lp_horntail.png</span>
+            <span>scroll_agong.png, scroll_janggong.png</span>
+            <span>scroll_tuhaeng.png, scroll_jeonhaeng.png</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+          <div class="font-bold text-amber-300 mb-1">🎵 BGM 오디오 파일 (`data/` 또는 외부 URL)</div>
+          <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-300 font-mono">
+            <span>KerningCity.mp3</span>
+            <span>Henesys.mp3</span>
+            <span>Elnath.mp3</span>
+            <span>Ludibrium.mp3</span>
+            <span>Horntail.mp3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="drop-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-slate-900 border-2 border-amber-500 rounded-xl max-w-lg w-full p-4 flex flex-col max-h-[85vh]">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
+        <h3 class="text-sm font-bold text-amber-400">🔍 드롭 정보 & 확정 확률표</h3>
+        <button onclick="closeDropModal()" class="text-slate-400 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      <div id="drop-modal-content" class="overflow-y-auto custom-scroll flex flex-col gap-2 text-xs pr-1"></div>
+    </div>
+  </div>
+
+  <script>
+    const TYPING_KEYS = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z','2','3','4','5','6','7','8','9'];
+
+    const TYPING_TEXTS = [
+   "여호와는 나의 목자시니 내게 부족함이 없으리로다",
+      "내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라",
+      "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니",
+      "믿음은 바라는 것들의 실상이요 보이지 않는 것들의 증거니",
+      "여호와는 나의 빛이요 나의 구원이시니 내가 누구를 두려워하리요",
+      "너는 마음을 다하여 여호와를 신뢰하고 네 명철을 의지하지 말라",
+      "두려워하지 말라 내가 너와 함께 함이라",
+      "놀라지 말라 나는 네 하나님이 됨이라",
+      "내가 너를 세시게 하리라 참으로 너를 도와 주리라",
+      "아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로 구하라",
+      "평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라",
+      "여호와를 기뻐하라 그가 네 마음의 소원을 네게 이루어 주시리로다",
+      "네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고",
+      "주의 말씀은 내 발에 등이요 내 길에 빛이니이다",
+      "하나님은 우리의 피난처시요 힘이시니 환난 중에 만날 큰 도움이시라",
+      "구하라 그리하면 너희에게 주실 것이요",
+      "찾으라 그리하면 찾아낼 것이요 문을 두드리라",
+      "우리가 알거니와 하나님을 사랑하는 자들에게는 모든 것이 합력하여 선을 이루느니라",
+      "내가 선한 싸움을 싸우고 나의 달려갈 길을 마치고 믿음을 지켰으니",
+      "주 여호와는 나의 힘이시라 나의 발을 사슴과 같게 하사",
+      "항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라",
+      "너희는 세상의 빛이라 산 위에 있는 동네가 숨겨지지 못할 것이요",
+"너는 마음을 다하여 여호와를 신뢰하라",
+"너희는 세상의 소금이라",
+"서로 사랑하라 내가 너희를 사랑한 것 같이",
+"내 시작은 미약하였으나 네 나중은 심히 창대하리라",
+"의인의 길은 돋는 햇살 같아서",
+"너는 내게 부르짖으라 내가 응답하겠고",
+"진리를 알지니 진리가 너희를 자유롭게 하리라",
+"수고하고 무거운 짐 진 자들아 다 내게로 오라",
+"주 예수를 믿으라 그리하면 구원을 받으리라",
+"여호와를 앙망하는 자는 새 힘을 얻으리니",
+"너희는 먼저 그의 나라와 그의 의를 구하라",
+"내 은혜가 네게 족하도다",
+"나를 사랑하는 자들이 나의 사랑을 입으며",
+"사람이 마음으로 자기의 길을 계획할지라도",
+"너희 염려를 다 주께 맡기라",
+"볼지어다 내가 세상 끝날까지 너희와 함께 있으리라",
+"하나님은 토기장이시요 우리는 진흙이라",
+"믿음이 없이는 하나님을 기쁘시게 하지 못하나니",
+"눈물을 흘리며 씨를 뿌리는 자는 기쁨으로 거두리로다",
+"주의 말씀은 내 발의 등이요 내 길에 빛이니이다",
+"믿음은 바라는 것들의 실상이요",
+"내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라",
+"여호와는 나의 목자시니 내게 부족함이 없으리로다",
+"두려워하지 말라 내가 너와 함께 함이라",
+"아무 것도 염려하지 말고 오직 기도와 간구로",
+"평안을 너희에게 끼치노니 곧 나의 평안이라",
+"하나님은 우리의 피난처시요 힘이시니",
+"구하라 그리하면 너희에게 주실 것이요",
+"항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라",
+"너희는 마음을 괴롭게 하지 말라 하나님을 믿으니 또 나를 믿으라",
+"주 여호와는 나의 힘이시라",
+"하나님이 세상을 이처럼 사랑하사",
+"너희는 세상의 빛이라",
+"여호와를 기뻐하라 그가 네 마음의 소원을 이루어 주시리라",
+"주께서 내 길을 평탄하게 하시리라",
+"너는 여호와를 기다릴지어다 강하고 담대하라",
+"하나님의 사랑이 우리 마음에 부은 바 됨이니",
+"우리가 사랑함은 그가 먼저 우리를 사랑하셨음이라",
+"너희의 믿음대로 되라",
+"여호와는 선하시며 환난 날에 산성이시라",
+"축구의 페널티킥 거리는 골대로부터 11m",
+"현대 올림픽이 처음 열린 해는 1896년 아테네",
+"농구를 처음 만든 나라는 미국",
+"태권도 올림픽 정식 종목 된 해 2000년 시드니",
+"배구 처음 만든 나라 미국(윌리엄 모건)",
+"마라톤 정식 코스 길이 42.195km",
+"야구 베이스 간 거리는 (60피트)",
+"탁구 처음 만든 나라 영국.",
+"배드민턴 처음 만든 나라 영국",
+"골프의 정규 1라운드 18홀로 구성.",
+"핸드볼 처음 만든 나라 독일",
+"유도 올림픽 정식 종목 된 해 1964년(도쿄)",
+"테니스 처음 만든 나라 영국",
+"축구 월드컵 처음 개최된 해 1930년(우루과이)",
+"아시안 게임 처음 열린 해 1951년(뉴델리)",
+"럭비 처음 만든 나라는 영국",
+"펜싱 세 가지 세부 종목 플뢰레, 에페, 사브르",
+"동계 올림픽 처음 열린 해 1924년(샤모니)",
+"양궁 올림픽 정식 종목 채택 해 1972년(뮌헨)",
+"근대 5전 종목 사격, 펜싱, 수영, 승마, 크로스컨트리",
+"아이스하키 퍽 기본 재질 고무",
+"컬링 처음 만든 나라 스코틀랜드",
+"서울 올림픽 개최된 해 1988년",
+"양궁의 표적지 중앙 지름은 12.2cm",
+"워터폴로(수구) 처음 만든 나라 영국",
+"패럴림픽 처음 개최된 해 1960년(로마)",
+"가인박명: 여자의 용모가 빼어나게 아름다우면 운명이 기구함",
+"각골난망: 은혜가 뼈에 새겨질 정도로 깊어 잊혀지지 않음",
+"감탄고토: 달면 삼키고 쓰면 뱉는다는 뜻으로 지조가 없음",
+"갑론을박: 서로 자기의 주장을 내세워 논쟁함",
+"고진감래: 고생 끝에 즐거움이 옴",
+"과유불급: 정도를 지나침은 미치지 못함과 같음",
+"구사일생: 죽을 고비를 여러 번 넘기고 겨우 살아남",
+"군계일학: 무리 지어 있는 닭 가운데 한 마리의 학처럼 뛰어남",
+"대기만성: 큰 그릇은 늦게 완성되듯 크게 될 사람은 늦게 이루어짐",
+"동문서답: 묻는 말에 전혀 딴판으로 대답함",
+"동고동락: 괴로움과 즐거움을 함께함",
+"명불허전: 명성이나 이름이 헛되이 전해진 것이 아님",
+"발본색원: 폐단이 되는 근본 원인을 아주 없애버림",
+"역지사지: 처지를 서로 바꾸어 생각함",
+"유비무환: 미리 준비가 되어 있으면 뒷걱정이 없음",
+"이심전심: 마음에서 마음으로 뜻이 통함",
+"일석이조: 한 가지 일로 두 가지 이득을 얻음",
+"자업자득: 자기가 저지른 일의 결과를 자기가 받음",
+"전화위복: 화가 바뀌어 도리어 복이 됨",
+"절차탁마: 학문이나 덕행을 끊임없이 닦고 정진함",
+"주마간산: 말을 달리면서 산천을 구경하듯 수박 겉핥기식으로 봄",
+"청출어람: 제자가 스승보다 나음",
+"초지일관: 처음 세운 뜻을 끝까지 밀고 나감",
+"칠전팔기: 일곱 번 넘어져도 여덟 번 일어남",
+"타산지석: 남의 하찮은 언행도 자기의 덕을 닦는 데 도움이 됨",
+"풍전등화: 바람 앞의 촛불처럼 매우 위태로운 처지",
+"학수고대: 학처럼 목을 길게 빼고 간절히 기다림",
+"함흥차사: 심부름을 가서 소식이 없거나 돌아오지 않음",
+"형설지공: 반딧불과 눈빛으로 글을 읽어 이룬 노력의 성과",
+"호구지책: 겨우 먹고살아 갈 방법",
+"가는 말이 고와야 오는 말이 곱다",
+"가랑비에 옷 젖는 줄 모른다",
+"가지 많은 나무에 바람 잘 날 없다",
+"개구리 올챙이 적 생각 못 한다",
+"고래 싸움에 새우 등 터진다",
+"공든 탑이 무너지랴",
+"구슬이 서 말이라도 꿰어야 보배다",
+"그림의 떡",
+"금강산도 식후경",
+"돌다리도 두들겨 보고 건너라",
+"등잔 밑이 어둡다",
+"땅 짚고 헤엄치기",
+"뛰는 놈 위에 나는 놈 있다",
+"마른하늘에 날벼락",
+"말 한마디로 천 냥 빚을 갚는다",
+"매도 먼저 맞는 게 낫다",
+"믿는 도끼에 발등 찍힌다",
+"바늘 도둑이 소 도둑 된다",
+"발 없는 말이 천 리 간다",
+"배보다 배꼽이 더 크다",
+"벼는 익을수록 고개를 숙인다",
+"보기 좋은 떡이 먹기도 좋다",
+"부잣집 외상보다 비눗갑 장사가 낫다",
+"빛 좋은 개살구",
+"소 잃고 외양간 고친다",
+"아는 길도 물어가라",
+"언 발에 오줌 누기",
+"우물 안 개구리",
+"원숭이도 나무에서 떨어진다",
+"티끌 모아 태산",
+"benevolent 자비로운",
+"coherent 논리정연한",
+"diligence 부지런함",
+"eloquent 유창한",
+"feasible 실현가능한",
+"gregarious 사교적인",
+"hypothesis 가설",
+"inevitable 피할수없는",
+"judicious 현명한",
+"legitimate 합법적인",
+"meticulous 꼼꼼한",
+"notorious 악명높은",
+"obscure 모호한",
+"pragmatic 실용적인",
+"reluctant 불쾌한",
+"scrutinize 자세히조사하다",
+"tangible 유형의",
+"ubiquitous 어디에나있는",
+"versatile 다재다능한",
+"vulnerable 취약한",
+"advocate 옹호하다",
+"ambiguous 모호한",
+"benevolence 자비",
+"candid 솔직한",
+"deter 막다",
+"empirical 경험적인",
+"foster 육성하다",
+"indispensable 필수적인",
+"lucrative 수익성이좋은",
+"manifest 명백히하다",
+"negligible 하찮은",
+"ostentatious 과시하는",
+"profound 깊은",
+"reconcile 화해시키다",
+"subtle 미묘한",
+"transient 일시적인",
+"unanimous 만장일치의",
+"vindicate 무죄를입증하다",
+"widespread 광범위한",
+"yield 양보하다",
+"alleviate 완화하다",
+"bolster 강화하다",
+"complacent 안주하는",
+"delineate 설명하다",
+"elucidate 밝히다",
+"fluctuate 변동하다",
+"impair 손상시키다",
+"jeopardize 위협하다",
+"mitigate 완화하다",
+"nuance 미묘한차이",
+"obsolete 쓸모없이된",
+"plausible 타당한",
+"redundant 불필요한",
+"spontaneous 자발적인",
+"tentative 임시의",
+"undermine 약화시키다",
+"validity 유효성",
+"adversity 역경",
+"benevolence 선행",
+"concur 동의하다",
+"despise 경멸하다",
+"exemplify 예시하다",
+"formidable 가공할만한",
+"impartial 공정한",
+"lenient 관대한",
+"notion 개념",
+"ominous 불길한",
+"prolific 다작의",
+"relinquish 포기하다",
+"stringent 엄격한",
+"trivial 사소한",
+"unprecedented 전례없는",
+"venerate 존경하다",
+"withstand 견디다",
+"zealous 열성적인",
+"authentic 진짜의",
+"coercion 강제",
+"discrepancy 차이",
+"exacerbate 악화시키다",
+"gullible 잘속는",
+"imperative 필수적인",
+"lucid 명쾌한",
+"obligation 의무",
+"predicament 곤경",
+"relentless 끊임없는",
+"subsequent 이후의",
+"treacherous 배신하는",
+"unobtrusive 눈에띄지않는",
+"vivid 생생한",
+"abundant 풍부한",
+"comprehend 이해하다",
+"diminish 줄어들다",
+"expedite 촉진하다",
+"harmony 조화",
+"induce 유도하다",
+"magnitude 규모",
+"obstacle 장애물",
+"prerequisite 전제조건",
+"reluctant 망설이는",
+"susceptible 영향받기쉬운",
+"abstract 추상적인",
+"accumulate 축적하다",
+"acquire 얻다",
+"adjacent 인접한",
+"allocate 배분하다",
+"anticipate 예측하다",
+"attribute 탓으로돌리다",
+"bureaucracy 관료제",
+"cognitive 인지의",
+"commence 시작되다",
+"compensate 보상하다",
+"consequence 결과",
+"consolidate 통합하다",
+"contemplate 심사숙고하다",
+"contradict 반박하다",
+"contribute 기여하다",
+"convince 설득하다",
+"correlate 연관성이있다",
+"decline 감소하다",
+"depict 묘사하다",
+"deteriorate 악화되다",
+"differentiate 구별하다",
+"distort 왜곡하다",
+"dominant 우세한",
+"eliminate 제거하다",
+"emphasize 강조하다",
+"enhance 향상시키다",
+"evaluate 평가하다",
+"exaggerate 과장하다",
+"exclusive 독점적인",
+"explicit 명백한",
+"fundamental 근본적인",
+"generate 발생시키다",
+"illusion 환상",
+"implement 시행하다",
+"implication 함의",
+"implicit 암묵적인",
+"incline 기울다",
+"indispensable 필수적인",
+"inevitable 피할수없는",
+"integrate 통합하다",
+"interpret 해석하다",
+"intervene 개입하다",
+"intrinsic 본질적인",
+"investigate 조사하다",
+"isolate 고립시키다",
+"justify 정당화하다",
+"legitimate 타당한",
+"maintain 유지하다",
+"manipulate 조종하다",
+"modify 수정하다",
+"monopolize 독점하다",
+"negotiate 협상하다",
+"neutral 중립의",
+"observe 관찰하다",
+"obtain 얻다",
+"perceive 인지하다",
+"persist 지속되다",
+"perspective 관점",
+"phenomenon 현상",
+"potential 잠재적인",
+"precede 앞서다",
+"predominant 우세한",
+"preserve 보존하다",
+"prevalent 널리퍼진",
+"prohibit 금지하다",
+"proportion 비율",
+"pursue 추구하다",
+"rational 이성적인",
+"reinforce 강화하다",
+"고진감래 고생 끝에 즐거움이 옴",
+"과유불급 정도를 지나침은 미치지 못함과 같음",
+"구사일생 죽을 고비를 넘기고 겨우 살아남",
+"군계일학 무리 중 뛰어난 한 사람",
+"대기만성 크게 될 사람은 늦게 이루어짐",
+"동고동락 괴로움과 즐거움을 함께함",
+"명불허전 명성이 헛되이 전해진 것이 아님",
+"발본색원 폐단의 근본 원인을 없앰",
+"역지사지 처지를 바꾸어 생각함",
+"유비무환 미리 준비하면 걱정이 없음",
+"이심전심 마음에서 마음으로 뜻이 통함",
+"일석이조 한 가지 일로 두 가지 이득을 얻음",
+"자업자득 자기가 저지른 일의 결과를 받음",
+"전화위복 화가 바뀌어 도리어 복이 됨",
+"절차탁마 학문이나 덕행을 끊임없이 닦음",
+"청출어람 제자가 스승보다 나음",
+"초지일관 처음 뜻을 끝까지 밀고 나감",
+"칠전팔기 일곱 번 넘어져도 여덟 번 일어남",
+"타산지석 남의 하찮은 언행도 도움이 됨",
+"형설지공 고난을 이겨내고 이룬 노력의 성과",
+"각골난망 은혜를 뼈에 새겨 잊지 않음",
+"감탄고토 달면 삼키고 쓰면 뱉음",
+"갑론을박 서로 자기 주장을 내세워 논쟁함",
+"동문서답 묻는 말에 전혀 딴판으로 대답함",
+"주마간산 수박 겉핥기식으로 구경함",
+"풍전등화 매우 위태로운 처지",
+"학수고대 간절히 기다림",
+"함흥차사 가서 소식이 없거나 돌아오지 않음",
+"호구지책 겨우 먹고살아 갈 방법",
+"결초보은 죽어서도 은혜를 잊지 않고 갚음",
+"개과천선 지나친 허물을 고쳐 착하게 됨",
+"고립무원 고립되어 구원해 줄 사람이 없음",
+"교학상장 가르치고 배우며 서로 성장함",
+"근묵자흑 나쁜 사람과 가까이하면 물듦",
+"다다익선 많으면 많을수록 좋음",
+"동병상련 같은 처지의 사람끼리 서로 동정함",
+"마이동풍 남의 말을 귀담아듣지 않고 흘려버림",
+"무골호인 성품이 온순하여 남의 부탁을 잘 들어줌",
+"문전성시 찾으러 오는 사람이 많아 정문이 붐빔",
+"박학다식 아는 것이 많고 학식이 넓음",
+"배은망덕 은혜를 잊고 도리어 배반함",
+"백발백중 무슨 일이든 틀림없이 잘 맞음",
+"사필귀정 모든 일은 결국 바른길로 돌아감",
+"선공후사 공적인 일을 먼저 하고 사사로운 일을 뒤로함",
+"솔선수범 남보다 앞장서서 모범을 보임",
+"심심상인 마음에서 마음으로 뜻을 전함",
+"어부지리 두 사람의 싸움 이용해 제삼자가 이득을 얻음",
+"온고지신 옛것을 익혀 새것을 앎",
+"외유내강 겉으로는 부드러우나 속은 강함",
+"우이독경 아무리 가르쳐도 알아듣지 못함"
+
+    ];
+
+    let audioCtx = null;
+    let sfxVolumeVal = 0.5;
+    let isSfxMuted = false;
+
+    function initAudio() {
+      if(!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    let isBgmPlaying = false;
+    function toggleBGM() {
+      initAudio();
+      const bgm = document.getElementById('game-bgm');
+      const btnText = document.getElementById('bgm-text');
+      const btnIcon = document.getElementById('bgm-icon');
+
+      if (!bgm) return;
+
+      if (isBgmPlaying) {
+        bgm.pause();
+        isBgmPlaying = false;
+        if (btnText) btnText.innerText = "BGM 켜기";
+        if (btnIcon) btnIcon.innerText = "🔇";
+      } else {
+        bgm.play().then(() => {
+          isBgmPlaying = true;
+          if (btnText) btnText.innerText = "BGM 재생중";
+          if (btnIcon) btnIcon.innerText = "🎵";
+        }).catch(err => {
+          console.warn("BGM play error:", err);
+        });
+      }
+    }
+
+    function changeBGMTrack(trackKey) {
+      const bgm = document.getElementById('game-bgm');
+      if(!bgm) return;
+      let src = '';
+      if(trackKey === 'kerning') src = 'https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/KerningCity.mp3';
+      else if(trackKey === 'henesys') src = 'https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/Henesys.mp3';
+      else if(trackKey === 'elnath') src = 'https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/Elnath.mp3';
+      else if(trackKey === 'ludi') src = 'https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/Ludibrium.mp3';
+      else if(trackKey === 'horntail') src = 'https://ia800201.us.archive.org/27/items/maplestory-bgm-collection/Horntail.mp3';
+
+      bgm.src = src;
+      if(isBgmPlaying) bgm.play().catch(()=>{});
+      addLog(`🎵 BGM 트랙 변경됨: [${trackKey}]`, 'text-amber-300 font-bold');
+    }
+
+    function setBGMVolume(val) {
+      const bgm = document.getElementById('game-bgm');
+      if (bgm) bgm.volume = parseFloat(val);
+    }
+
+    function toggleSFX() {
+      isSfxMuted = !isSfxMuted;
+      document.getElementById('sfx-icon').innerText = isSfxMuted ? "🔇" : "🔊";
+      document.getElementById('sfx-text').innerText = isSfxMuted ? "음소거" : "효과음";
+    }
+
+    function setSFXVolume(val) {
+      sfxVolumeVal = parseFloat(val);
+    }
+
+    function playSound(type) {
+      if(!audioCtx || isSfxMuted || sfxVolumeVal <= 0) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        const masterGain = sfxVolumeVal;
+
+        if(type === 'hit') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+          gain.gain.setValueAtTime(0.15 * masterGain, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if(type === 'lucky') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(500, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+          gain.gain.setValueAtTime(0.2 * masterGain, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } else if(type === 'triple') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+          gain.gain.setValueAtTime(0.25 * masterGain, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if(type === 'levelup') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.setValueAtTime(600, now + 0.1);
+          osc.frequency.setValueAtTime(800, now + 0.2);
+          gain.gain.setValueAtTime(0.25 * masterGain, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        }
+      } catch(e){}
+    }
+
+    const imageCache = {};
+    function getSpriteImage(key, englishFilename) {
+      if(imageCache[key]) return imageCache[key];
+      const img = new Image();
+      img.src = `data/${englishFilename}.png`;
+      img.onload = () => { img.isLoaded = true; };
+      img.onerror = () => { img.isLoaded = false; img.failed = true; };
+      imageCache[key] = img;
+      return img;
+    }
+
+    let uidCounter = 1;
+    function getNextUid() {
+      return uidCounter++;
+    }
+
+    const SHURIKENS = [
+      { id: 'subi', name: '수비표창', atk: 15, icon: '✴️', file: 'subi', sell: 1000 },
+      { id: 'godreum', name: '고드름', atk: 15, icon: '✦', file: 'godreum', sell: 500 },
+      { id: 'paeng', name: '팽이', atk: 17, icon: '🌀', file: 'paeng', sell: 2000 },
+      { id: 'snowball', name: '눈덩이', atk: 17, icon: '❄️', file: 'snowball', sell: 3000 },
+      { id: 'namu', name: '나무팽이', atk: 19, icon: '🪵', file: 'namu', sell: 5000 },
+      { id: 'mokbi', name: '목비표창', atk: 19, icon: '🗡️', file: 'mokbi', sell: 8000 },
+      { id: 'wolbi', name: '월비표창', atk: 21, icon: '🌙', file: 'wolbi', sell: 25000 },
+      { id: 'geumbi', name: '금비표창', atk: 21, icon: '🔱', file: 'geumbi', sell: 50000 },
+      { id: 'tobi', name: '토비표창', atk: 23, icon: '⚡', file: 'tobi', sell: 250000 },
+      { id: 'maple_bi', name: '메이플표창', atk: 25, icon: '🍁', file: 'maple_bi', sell: 800000 },
+      { id: 'noejeon', name: '뇌전표창', atk: 25, icon: '⚡', file: 'noejeon', sell: 1200000 },
+      { id: 'ilbi', name: '일비표창', atk: 27, icon: '⭐', file: 'ilbi', sell: 5000000 },
+      { id: 'hwabi', name: '화비표창', atk: 29, icon: '🔥', file: 'hwabi', sell: 20000000 },
+      { id: 'muhan_bi', name: '무한의표창', atk: 32, icon: '✨', file: 'muhan', sell: 100000000 }
+    ];
+
+    const WEAPONS = [
+      { id: 'mayba', name: '메이바', reqLv: 25, atk: 18, price: 50000, sell: 25000, icon: '🥊', file: 'mayba', tier: 1 },
+      { id: 'steers', name: '스티어스', reqLv: 35, atk: 23, price: 150000, sell: 75000, icon: '🥊', file: 'steers', tier: 1 },
+      { id: 'purple_steers', name: '보라색 스티어스', reqLv: 38, atk: 25, price: 250000, sell: 125000, icon: '🥊', file: 'purple_steers', tier: 2 },
+      { id: 'cobra', name: '코브라아대', reqLv: 40, atk: 26, price: 350000, sell: 175000, icon: '🐍', file: 'cobra', tier: 2 },
+      { id: 'thrones', name: '메이플 스론즈', reqLv: 43, atk: 28, price: 500000, sell: 250000, icon: '🍁', file: 'thrones', tier: 2 },
+      { id: 'guardian', name: '다크 가디언', reqLv: 50, atk: 31, price: 1200000, sell: 600000, icon: '🥊', file: 'guardian', tier: 3 },
+      { id: 'bonin', name: '다크 보닌', reqLv: 55, atk: 34, price: 2500000, sell: 1250000, icon: '🥊', file: 'bonin', tier: 3 },
+      { id: 'slain', name: '다크 슬레인', reqLv: 60, atk: 38, price: 5000000, sell: 2500000, icon: '🥊', file: 'slain', tier: 3 },
+      { id: 'candeo', name: '메이플 칸데오', reqLv: 64, atk: 42, price: 10000000, sell: 5000000, icon: '🍁', file: 'candeo', tier: 4 },
+      { id: 'heukgab', name: '흑갑충', reqLv: 70, atk: 47, price: 25000000, sell: 12500000, icon: '🦂', file: 'heukgab', tier: 4 },
+      { id: 'hwanggab', name: '황갑충', reqLv: 70, atk: 50, price: 50000000, sell: 25000000, icon: '🦂', file: 'hwanggab', tier: 5 },
+      { id: 'gigantic', name: '기간틱', reqLv: 80, atk: 53, price: 90000000, sell: 45000000, icon: '🥊', file: 'gigantic', tier: 5 },
+      { id: 'castor', name: '캐스토르', reqLv: 90, atk: 58, price: 140000000, sell: 70000000, icon: '🥊', file: 'castor', tier: 6 },
+      { id: 'dragon', name: '드래곤 아대', reqLv: 110, atk: 62, price: 200000000, sell: 100000000, icon: '🐉', file: 'dragon', tier: 6 },
+      { id: 'scaraba', name: '다크 스카라바', reqLv: 120, atk: 68, price: 500000000, sell: 250000000, icon: '💥', file: 'scaraba', tier: 7 }
+    ];
+
+    const ARMORS = [
+      { id: 'brown_satgat', name: '갈색 삿갓', category: 'hat', luk: 3, icon: '👒', file: 'brown_satgat', sell: 15000 },
+      { id: 'black_satgat', name: '검정 삿갓', category: 'hat', luk: 5, icon: '🎩', file: 'black_satgat', sell: 35000 },
+      { id: 'bon_helm', name: '본 헬름', category: 'hat', luk: 5, icon: '🪖', file: 'bon_helm', sell: 50000 },
+      { id: 'zakum_helm', name: '자쿰의 투구', category: 'hat', luk: 15, icon: '👑', file: 'zakum_helm', sell: 5000000 },
+      { id: 'blue_gown', name: '파란색 가운', category: 'body', luk: 5, icon: '🥋', file: 'blue_gown', sell: 30000 },
+      { id: 'red_gown', name: '빨간색 가운', category: 'body', luk: 8, icon: '🥋', file: 'red_gown', sell: 80000 },
+      { id: 'icarus_cape', name: '이카루스의 망토', category: 'body', luk: 10, icon: '🦹', file: 'icarus_cape', sell: 200000 },
+      { id: 'nogada', name: '노가다 목장갑', category: 'glove', atk: 0, icon: '🧤', file: 'nogada', sell: 20000 }
+    ];
+
+    const LP_RECORDS = [
+      { id: 'lp_henesys', name: 'LP: 헤네시스의 봄', unlockMeso: 10000000000, trackKey: 'henesys', icon: '🍄', file: 'lp_henesys', desc: '100억 메소 도달 시 봉인해제!' },
+      { id: 'lp_elnath', name: 'LP: 엘나스의 설원', unlockMeso: 20000000000, trackKey: 'elnath', icon: '❄️', file: 'lp_elnath', desc: '200억 메소 도달 시 봉인해제!' },
+      { id: 'lp_ludi', name: 'LP: 루디브리엄 장난감', unlockMeso: 50000000000, trackKey: 'ludi', icon: '🧸', file: 'lp_ludi', desc: '500억 메소 도달 시 봉인해제!' },
+      { id: 'lp_horntail', name: 'LP: 혼테일의 성역', unlockMeso: 100000000000, trackKey: 'horntail', icon: '🐉', file: 'lp_horntail', desc: '1000억 메소 도달 시 봉인해제!' }
+    ];
+
+    const STAGES = [
+      { name: '리스항구 해안가', monster: '달팽이', emoji: '🐌', file: 'snail', reqLv: 1, eva: 5, hp: 20, exp: 10, meso: 10, bg: 'bg_stage0', drops: [{id:'paeng', rate:0.08}, {id:'godreum', rate:0.06}, {id:'agong60', rate:0.02}, {id:'cider', rate:0.05}, {id:'brown_satgat', rate:0.015}, {id:'tobi', rate:0.001}, {id:'wolbi', rate:0.0003}] },
+      { name: '헤네시스 동쪽풀숲', monster: '주황버섯', emoji: '🍄', file: 'mushroom', reqLv: 5, eva: 12, hp: 40, exp: 18, meso: 20, bg: 'bg_stage1', drops: [{id:'snowball', rate:0.07}, {id:'namu', rate:0.05}, {id:'brown_satgat', rate:0.02}, {id:'agong60', rate:0.02}, {id:'cider', rate:0.04}, {id:'tobi', rate:0.0015}, {id:'wolbi', rate:0.0005}] },
+      { name: '슬라임 풀숲', monster: '슬라임', emoji: '🟢', file: 'slime', reqLv: 8, eva: 20, hp: 60, exp: 25, meso: 30, bg: 'bg_stage2', drops: [{id:'namu', rate:0.06}, {id:'mokbi', rate:0.04}, {id:'brown_satgat', rate:0.02}, {id:'nogada', rate:0.03}, {id:'janggong60', rate:0.02}, {id:'tobi', rate:0.002}, {id:'geumbi', rate:0.0005}] },
+      { name: '지혜의 숲', monster: '파란버섯', emoji: '🟦', file: 'blue_mushroom', reqLv: 15, eva: 35, hp: 150, exp: 55, meso: 70, bg: 'bg_stage3', drops: [{id:'geumbi', rate:0.05}, {id:'wolbi', rate:0.03}, {id:'blue_gown', rate:0.02}, {id:'nogada', rate:0.025}, {id:'tuhaeng60', rate:0.02}, {id:'tobi', rate:0.003}, {id:'maple_bi', rate:0.0003}] },
+      { name: '개미굴 깊은 곳', monster: '뿔버섯', emoji: '🤎', file: 'horn_mushroom', reqLv: 25, eva: 55, hp: 350, exp: 120, meso: 150, bg: 'bg_stage4', drops: [{id:'mokbi', rate:0.05}, {id:'wolbi', rate:0.035}, {id:'mayba', rate:0.02}, {id:'jeonhaeng60', rate:0.02}, {id:'cider', rate:0.05}, {id:'tobi', rate:0.004}, {id:'maple_bi', rate:0.0005}] },
+      { name: '커닝시티 지하철', monster: '레이스', emoji: '👻', file: 'wraith', reqLv: 35, eva: 80, hp: 650, exp: 220, meso: 280, bg: 'bg_stage5', drops: [{id:'wolbi', rate:0.05}, {id:'tobi', rate:0.025}, {id:'steers', rate:0.02}, {id:'black_satgat', rate:0.02}, {id:'janggong60', rate:0.025}, {id:'maple_bi', rate:0.002}, {id:'noejeon', rate:0.0005}] },
+      { name: '드레이크 둥지', monster: '드레이크', emoji: '🐉', file: 'drake', reqLv: 45, eva: 110, hp: 1200, exp: 400, meso: 500, bg: 'bg_stage6', drops: [{id:'tobi', rate:0.035}, {id:'maple_bi', rate:0.02}, {id:'cobra', rate:0.02}, {id:'agong10', rate:0.015}, {id:'bon_helm', rate:0.015}, {id:'ilbi', rate:0.001}, {id:'noejeon', rate:0.0025}] },
+      { name: '오르비스 탑', monster: '주니어페페', emoji: '🐧', file: 'jr_pepe', reqLv: 55, eva: 140, hp: 2000, exp: 700, meso: 850, bg: 'bg_stage7', drops: [{id:'maple_bi', rate:0.03}, {id:'noejeon', rate:0.02}, {id:'guardian', rate:0.02}, {id:'icarus_cape', rate:0.015}, {id:'tuhaeng10', rate:0.015}, {id:'ilbi', rate:0.002}, {id:'hwabi', rate:0.0005}] },
+      { name: '차가운 벌판', monster: '예티와페페', emoji: '🏔️', file: 'yeti_pepe', reqLv: 65, eva: 175, hp: 3500, exp: 1200, meso: 1400, bg: 'bg_stage8', drops: [{id:'noejeon', rate:0.025}, {id:'ilbi', rate:0.012}, {id:'bonin', rate:0.02}, {id:'janggong10', rate:0.015}, {id:'red_gown', rate:0.015}, {id:'hwabi', rate:0.001}, {id:'muhan_bi', rate:0.0002}] },
+      { name: '시계탑 최하층', monster: '바이킹', emoji: '🤖', file: 'viking', reqLv: 78, eva: 210, hp: 8500, exp: 2700, meso: 3200, bg: 'bg_stage9', drops: [{id:'noejeon', rate:0.03}, {id:'ilbi', rate:0.015}, {id:'slain', rate:0.02}, {id:'tuhaeng10', rate:0.015}, {id:'hwabi', rate:0.002}, {id:'muhan_bi', rate:0.0004}] },
+      { name: '전설의 계곡', monster: '라이칸스로프', emoji: '🐺', file: 'lycan', reqLv: 90, eva: 250, hp: 18000, exp: 5500, meso: 7000, bg: 'bg_stage10', drops: [{id:'ilbi', rate:0.02}, {id:'hwabi', rate:0.008}, {id:'candeo', rate:0.02}, {id:'jeonhaeng10', rate:0.015}, {id:'muhan_bi', rate:0.0008}] },
+      { name: '깊은 용의 둥지', monster: '붉은와이번', emoji: '🦅', file: 'wyvern', reqLv: 105, eva: 300, hp: 38000, exp: 11000, meso: 13000, bg: 'bg_stage11', drops: [{id:'hwabi', rate:0.018}, {id:'ilbi', rate:0.025}, {id:'heukgab', rate:0.02}, {id:'agong10', rate:0.02}, {id:'muhan_bi', rate:0.0015}] },
+      { name: '망각의 길', monster: '망각의수호대장', emoji: '⚜️', file: 'guardian_chief', reqLv: 125, eva: 360, hp: 80000, exp: 24000, meso: 28000, bg: 'bg_stage12', drops: [{id:'muhan_bi', rate:0.005}, {id:'hwabi', rate:0.025}, {id:'ilbi', rate:0.03}, {id:'zakum_helm', rate:0.01}, {id:'scaraba', rate:0.008}] }
+    ];
+
+    const BOSSES = [
+      { name: '머쉬맘', emoji: '🍄', file: 'mushmom', reqLv: 30, eva: 70, hp: 5000, exp: 2500, meso: 15000, timeLimit: 45, bg: 'bg_boss0', drops: [{id:'wolbi', rate:0.25}, {id:'tobi', rate:0.10}, {id:'triple_book', rate:0.15}, {id:'brown_satgat', rate:0.12}, {id:'agong60', rate:0.10}] },
+      { name: '포장마차', emoji: '🚐', file: 'pojang', reqLv: 50, eva: 130, hp: 15000, exp: 8000, meso: 50000, timeLimit: 60, bg: 'bg_boss1', drops: [{id:'tobi', rate:0.25}, {id:'maple_bi', rate:0.12}, {id:'triple_book', rate:0.20}, {id:'agong60', rate:0.18}, {id:'ilbi', rate:0.015}] },
+      { name: '지네장로', emoji: '🐛', file: 'centipede', reqLv: 70, eva: 190, hp: 60000, exp: 35000, meso: 200000, timeLimit: 60, bg: 'bg_boss2', drops: [{id:'noejeon', rate:0.22}, {id:'ilbi', rate:0.10}, {id:'triple_book', rate:0.25}, {id:'janggong10', rate:0.15}, {id:'hwabi', rate:0.025}] },
+      { name: '파풀라투스', emoji: '⏰', file: 'papulatus', reqLv: 90, eva: 260, hp: 250000, exp: 150000, meso: 1000000, timeLimit: 90, bg: 'bg_boss3', drops: [{id:'ilbi', rate:0.22}, {id:'hwabi', rate:0.12}, {id:'triple_book', rate:0.35}, {id:'agong10', rate:0.20}, {id:'muhan_bi', rate:0.015}] },
+      { name: '피아누스', emoji: '🐟', file: 'pianus', reqLv: 105, eva: 320, hp: 600000, exp: 380000, meso: 2500000, timeLimit: 100, bg: 'bg_boss4', drops: [{id:'ilbi', rate:0.28}, {id:'hwabi', rate:0.18}, {id:'icarus_cape', rate:0.15}, {id:'triple_book', rate:0.45}, {id:'muhan_bi', rate:0.025}] },
+      { name: '자쿰', emoji: '🗿', file: 'zakum', reqLv: 120, eva: 380, hp: 1500000, exp: 900000, meso: 6000000, timeLimit: 120, bg: 'bg_boss5', drops: [{id:'ilbi', rate:0.35}, {id:'hwabi', rate:0.25}, {id:'zakum_helm', rate:0.18}, {id:'muhan_bi', rate:0.05}, {id:'triple_book', rate:0.60}] },
+      { name: '혼테일', emoji: '🐲', file: 'horntail', reqLv: 140, eva: 460, hp: 4500000, exp: 2800000, meso: 25000000, timeLimit: 150, bg: 'bg_boss6', drops: [{id:'hwabi', rate:0.35}, {id:'muhan_bi', rate:0.12}, {id:'scaraba', rate:0.15}, {id:'triple_book', rate:0.75}, {id:'agong10', rate:0.40}] },
+      { name: '핑크빈', emoji: '🌸', file: 'pinkbean', reqLv: 160, eva: 550, hp: 12000000, exp: 8000000, meso: 100000000, timeLimit: 180, bg: 'bg_boss7', drops: [{id:'muhan_bi', rate:0.25}, {id:'hwabi', rate:0.50}, {id:'scaraba', rate:0.25}, {id:'zakum_helm', rate:0.30}, {id:'triple_book', rate:0.90}] }
+    ];
+
+    const ACHIEVEMENTS_DEF = [
+      { id: 'kill_100', name: '초보 사냥꾼', desc: '몬스터 100마리 토벌', targetType: 'kills', targetVal: 100, rewardMeso: 50000, title: '초보 사냥꾼', effect: { type: 'meso', val: 0.1, desc: '메소 획득량 +10%' } },
+      { id: 'kill_500', name: '숙련된 자객', desc: '몬스터 500마리 토벌', targetType: 'kills', targetVal: 500, rewardMeso: 300000, title: '자객', effect: { type: 'atk', val: 5, desc: '공격력 +5' } },
+      { id: 'kill_2000', name: '베테랑 암살자', desc: '몬스터 2,000마리 토벌', targetType: 'kills', targetVal: 2000, rewardMeso: 2000000, title: '암살자', effect: { type: 'drop', val: 0.15, desc: '드롭률 +15%' } },
+      { id: 'lv_30', name: '2차 전직 완료', desc: '캐릭터 레벨 30 달성', targetType: 'level', targetVal: 30, rewardMeso: 150000, title: '어쌔신', effect: { type: 'atk', val: 10, desc: '공격력 +10' } },
+      { id: 'lv_70', name: '상위권 실력자', desc: '캐릭터 레벨 70 달성', targetType: 'level', targetVal: 70, rewardMeso: 1000000, title: '허밋', effect: { type: 'exp', val: 0.2, desc: '경험치 +20%' } },
+      { id: 'lv_120', name: '전설의 나이트로드', desc: '캐릭터 레벨 120 달성', targetType: 'level', targetVal: 120, rewardMeso: 15000000, title: '나이트로드', effect: { type: 'all', val: 25, desc: '공격력 +25 & 드롭률 +25%' } },
+      { id: 'meso_10m', name: '신흥 부자', desc: '누적 1,000만 메소 보유', targetType: 'meso', targetVal: 10000000, rewardMeso: 500000, title: '부자', effect: { type: 'meso', val: 0.25, desc: '메소 획득량 +25%' } },
+      { id: 'meso_100m', name: '커닝시티 거상', desc: '누적 1억 메소 보유', targetType: 'meso', targetVal: 100000000, rewardMeso: 10000000, title: '거상', effect: { type: 'meso', val: 0.5, desc: '메소 획득량 +50%' } },
+
+      { id: 'star_weapon_20', name: '명품 아대 장인', desc: '아대 계열 장비 20성 달성', targetType: 'star', targetCategory: 'weapon', targetVal: 20, rewardMeso: 10000000, title: '신궁의 손길', effect: { type: 'atk', val: 20, desc: '공격력 +20' } },
+      { id: 'star_weapon_30', name: '최고급 아대 마스터', desc: '아대 계열 장비 최종 30성 달성', targetType: 'star', targetCategory: 'weapon', targetVal: 30, rewardMeso: 100000000, title: '아대 신화', effect: { type: 'atk', val: 80, desc: '공격력 +80' } },
+
+      { id: 'star_shuriken_20', name: '영롱한 표창', desc: '표창 아이템 20성 달성', targetType: 'star', targetCategory: 'shuriken', targetVal: 20, rewardMeso: 15000000, title: '표창의 달인', effect: { type: 'drop', val: 0.2, desc: '드롭률 +20%' } },
+      { id: 'star_shuriken_30', name: '무한의 광채 표창', desc: '표창 아이템 최종 30성 달성', targetType: 'star', targetCategory: 'shuriken', targetVal: 30, rewardMeso: 150000000, title: '빛의 투척수', effect: { type: 'all', val: 60, desc: '공격력 +60 & 드롭률 +30%' } },
+
+      { id: 'star_hat_30', name: '전설의 투구 수집가', desc: '모자/삿갓 계열 30성 달성', targetType: 'star', targetCategory: 'hat', targetVal: 30, rewardMeso: 50000000, title: '관모의 왕', effect: { type: 'all', val: 30, desc: '공격력 +30 & LUK +30' } },
+      { id: 'star_body_30', name: '불멸의 방어구 장인', desc: '한벌옷/가운 계열 30성 달성', targetType: 'star', targetCategory: 'body', targetVal: 30, rewardMeso: 80000000, title: '불멸의 자객', effect: { type: 'exp', val: 0.4, desc: '경험치 +40%' } },
+      { id: 'star_glove_30', name: '신화의 노가다 장갑', desc: '장갑 계열 30성 달성', targetType: 'star', targetCategory: 'glove', targetVal: 30, rewardMeso: 100000000, title: '신의 손', effect: { type: 'atk', val: 100, desc: '공격력 +100' } }
+    ];
+
+    const state = {
+      level: 1,
+      exp: 0,
+      meso: 10000,
+      sp: 0,
+      ap: 0,
+      luk: 10,
+      dex: 10,
+      customBgSetting: 'auto',
+      
+      skills: {
+        lucky: 1,
+        haste: 0,
+        crit: 0,
+        shadow: 0,
+        grid: 0,
+        holy: 1,
+        hasTripleBook: false
+      },
+
+      unlockedLP: {},
+
+      stageIndex: 0,
+      isBossMode: false,
+      bossIndex: 0,
+      currentMonsterHp: 20,
+      currentMonsterMaxHp: 20,
+      bossTimeRemaining: 0,
+
+      // Endless Time-attack & 5-min Buff System
+      endlessWave: 1,
+      isEndlessMode: false,
+      endlessTimeRemaining: 120,
+      endlessBuffLevel: 0,
+      endlessBuffTimer: 0,
+
+      blackMarket: {
+        atkLevel: 0,
+        lukLevel: 0
+      },
+
+      stats: {
+        totalMonstersKilled: 0,
+        maxMesoReached: 10000
+      },
+      completedAchievements: {},
+      equippedTitle: '초보 도적',
+
+      inventory: [],
+      scrolls: {
+        agong60: 0, agong10: 0,
+        janggong60: 0, janggong10: 0,
+        tuhaeng60: 0, tuhaeng10: 0,
+        jeonhaeng60: 0, jeonhaeng10: 0
+      },
+
+      eqShurikenUid: null,
+      eqWeaponUid: null,
+      eqHatUid: null,
+      eqBodyUid: null,
+      eqGloveUid: null,
+
+      buffs: {
+        ciderTimer: 0,
+        expTimer: 0,
+        dropTimer: 0
+      },
+
+      starTargetCategory: 'weapon',
+      selectedInventoryTab: 'eq',
+      multiSellMode: false,
+      selectedItemUids: new Set(),
+      typingQueue: [],
+      currentWisdomIndex: 0
+    };
+
+    const canvasProjectiles = [];
+    const canvasVisualHits = [];
+    const canvasPopups = [];
+
+    const SAVE_KEY = 'MAPLE_SHURIKEN_RPG_SAVE_DATA_V8';
+
+    function saveGameProgress() {
+      try {
+        const saveData = {
+          level: state.level,
+          exp: state.exp,
+          meso: state.meso,
+          sp: state.sp,
+          ap: state.ap,
+          luk: state.luk,
+          dex: state.dex,
+          customBgSetting: state.customBgSetting,
+          skills: state.skills,
+          unlockedLP: state.unlockedLP,
+          stageIndex: state.stageIndex,
+          endlessWave: state.endlessWave,
+          endlessBuffLevel: state.endlessBuffLevel,
+          endlessBuffTimer: state.endlessBuffTimer,
+          blackMarket: state.blackMarket,
+          stats: state.stats,
+          completedAchievements: state.completedAchievements,
+          equippedTitle: state.equippedTitle,
+          inventory: state.inventory,
+          scrolls: state.scrolls,
+          eqShurikenUid: state.eqShurikenUid,
+          eqWeaponUid: state.eqWeaponUid,
+          eqHatUid: state.eqHatUid,
+          eqBodyUid: state.eqBodyUid,
+          eqGloveUid: state.eqGloveUid,
+          uidCounter: uidCounter
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+      } catch(e) {}
+    }
+
+    function loadGameProgress() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if(!raw) return false;
+        const data = JSON.parse(raw);
+
+        state.level = data.level || 1;
+        state.exp = data.exp || 0;
+        state.meso = data.meso || 0;
+        state.sp = data.sp || 0;
+        state.ap = data.ap || 0;
+        state.luk = data.luk || 10;
+        state.dex = data.dex || 10;
+        state.customBgSetting = data.customBgSetting || 'auto';
+        state.skills = Object.assign(state.skills, data.skills || {});
+        state.unlockedLP = data.unlockedLP || {};
+        state.stageIndex = data.stageIndex || 0;
+        state.endlessWave = data.endlessWave || 1;
+        state.endlessBuffLevel = data.endlessBuffLevel || 0;
+        state.endlessBuffTimer = data.endlessBuffTimer || 0;
+        state.blackMarket = Object.assign(state.blackMarket, data.blackMarket || {});
+        state.stats = Object.assign(state.stats, data.stats || {});
+        state.completedAchievements = data.completedAchievements || {};
+        state.equippedTitle = data.equippedTitle || '초보 도적';
+        state.inventory = data.inventory || [];
+        state.scrolls = Object.assign(state.scrolls, data.scrolls || {});
+        state.eqShurikenUid = data.eqShurikenUid || null;
+        state.eqWeaponUid = data.eqWeaponUid || null;
+        state.eqHatUid = data.eqHatUid || null;
+        state.eqBodyUid = data.eqBodyUid || null;
+        state.eqGloveUid = data.eqGloveUid || null;
+        if(data.uidCounter) uidCounter = data.uidCounter;
+
+        state.currentMonsterHp = STAGES[state.stageIndex].hp;
+        state.currentMonsterMaxHp = STAGES[state.stageIndex].hp;
+
+        addLog("💾 세이브 데이터를 불러왔습니다!", "text-emerald-300 font-bold");
+        return true;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    function resetGameProgress() {
+      if(!confirm("정말로 모든 데이터를 초기화하시겠습니까?")) return;
+      localStorage.removeItem(SAVE_KEY);
+      location.reload();
+    }
+
+    function addLog(msg, colorClass = 'text-slate-300') {
+      const logBox = document.getElementById('game-log');
+      if(!logBox) return;
+      const div = document.createElement('div');
+      div.className = colorClass;
+      div.innerText = msg;
+      logBox.appendChild(div);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function getPlayerJobTitle() {
+      if(state.level >= 120) return '나이트로드';
+      if(state.level >= 70) return '허밋';
+      if(state.level >= 30) return '어쌔신';
+      return '표창 도적';
+    }
+
+    function getItemName(id) {
+      const shuriken = SHURIKENS.find(s => s.id === id);
+      if(shuriken) return shuriken.name;
+      const weapon = WEAPONS.find(w => w.id === id);
+      if(weapon) return weapon.name;
+      const armor = ARMORS.find(a => a.id === id);
+      if(armor) return armor.name;
+      if(id === 'cider') return '사이다';
+      if(id === 'agong60') return '아대 공격력 주문서 60%';
+      if(id === 'agong10') return '아대 공격력 주문서 10%';
+      if(id === 'janggong60') return '장갑 공격력 주문서 60%';
+      if(id === 'janggong10') return '장갑 공격력 주문서 10%';
+      if(id === 'tuhaeng60') return '투구 행운 주문서 60%';
+      if(id === 'tuhaeng10') return '투구 행운 주문서 10%';
+      if(id === 'jeonhaeng60') return '전신갑옷 행운 주문서 60%';
+      if(id === 'jeonhaeng10') return '전신갑옷 행운 주문서 10%';
+      if(id === 'triple_book') return '스킬북: 트리플 스로우';
+      const lp = LP_RECORDS.find(l => l.id === id);
+      if(lp) return lp.name;
+      return id;
+    }
+
+    function getEquippedItem(uid) {
+      if(!uid) return null;
+      return state.inventory.find(i => i.uid === uid);
+    }
+
+    function getActiveTitleEffect() {
+      const ach = ACHIEVEMENTS_DEF.find(a => a.title === state.equippedTitle);
+      if(!ach) return null;
+      return ach.effect;
+    }
+
+    function calculateTotalAccuracy() {
+      // DEX 1당 명중률 2
+      return state.dex * 2;
+    }
+
+    function calculateTotalAtkAndLuk() {
+      let totalAtk = 10 + (state.blackMarket.atkLevel * 5);
+      let totalLuk = state.luk + (state.blackMarket.lukLevel * 10);
+
+      // Endless Wave 5-min Buff Bonus
+      if(state.endlessBuffTimer > 0 && state.endlessBuffLevel > 0) {
+        totalAtk += Math.floor(state.endlessBuffLevel * 8);
+        totalLuk += Math.floor(state.endlessBuffLevel * 12);
+      }
+
+      const titleEff = getActiveTitleEffect();
+      if(titleEff) {
+        if(titleEff.type === 'atk') totalAtk += titleEff.val;
+        if(titleEff.type === 'all') {
+          totalAtk += titleEff.val;
+          totalLuk += titleEff.val;
+        }
+      }
+
+      const shuriken = getEquippedItem(state.eqShurikenUid);
+      if(shuriken) {
+        const base = SHURIKENS.find(s => s.id === shuriken.id);
+        if(base) totalAtk += base.atk + (shuriken.starBonusAtk || 0);
+      }
+
+      const weapon = getEquippedItem(state.eqWeaponUid);
+      if(weapon) {
+        const base = WEAPONS.find(w => w.id === weapon.id);
+        if(base) totalAtk += base.atk + (weapon.extraAtk || 0) + (weapon.starBonusAtk || 0);
+      }
+
+      const hat = getEquippedItem(state.eqHatUid);
+      if(hat) {
+        const base = ARMORS.find(a => a.id === hat.id);
+        if(base) totalLuk += base.luk + (hat.extraStat || 0) + (hat.starBonusStat || 0);
+      }
+
+      const body = getEquippedItem(state.eqBodyUid);
+      if(body) {
+        const base = ARMORS.find(a => a.id === body.id);
+        if(base) totalLuk += base.luk + (body.extraStat || 0) + (body.starBonusStat || 0);
+      }
+
+      const glove = getEquippedItem(state.eqGloveUid);
+      if(glove) {
+        const base = ARMORS.find(a => a.id === glove.id);
+        if(base) totalAtk += (glove.extraAtk || 0) + (glove.starBonusAtk || 0);
+      }
+
+      if(state.buffs.ciderTimer > 0) totalAtk += 15;
+
+      return { totalAtk, totalLuk };
+    }
+
+    function getMinMaxDamage() {
+      const { totalAtk, totalLuk } = calculateTotalAtkAndLuk();
+      const baseDmg = (totalLuk * 3.6 + state.dex) * (totalAtk / 100);
+      const minDmg = Math.floor(baseDmg * 0.75);
+      const maxDmg = Math.floor(baseDmg * 1.15);
+      return { minDmg, maxDmg };
+    }
+
+    function attackMonster(isSkill = false, customMultiHits = null) {
+      initAudio();
+      let targetData;
+      let targetEva = 10;
+      let targetReqLv = 1;
+
+      if(state.isEndlessMode) {
+        targetData = { name: `심층 ${state.endlessWave}층`, emoji: '🔥', file: 'zakum', hp: 50000 * Math.pow(1.35, state.endlessWave - 1), exp: 5000 * state.endlessWave, meso: 10000 * state.endlessWave };
+        targetEva = 30 + state.endlessWave * 15;
+        targetReqLv = Math.min(200, state.endlessWave * 10);
+      } else if(state.isBossMode) {
+        targetData = BOSSES[state.bossIndex];
+        targetEva = targetData.eva || 50;
+        targetReqLv = targetData.reqLv;
+      } else {
+        targetData = STAGES[state.stageIndex];
+        targetEva = targetData.eva || 10;
+        targetReqLv = targetData.reqLv;
+      }
+
+      let penalty = 1.0;
+      if(!state.isEndlessMode && state.level < targetReqLv) penalty = 0.7;
+
+      const playerAcc = calculateTotalAccuracy();
+      
+      // Accuracy vs Evasion calculation:
+      // Base hit rate: Accuracy / (Target Evasion * Level Gap Penalty)
+      let levelGap = Math.max(0, targetReqLv - state.level);
+      let gapPenalty = 1 + (levelGap * 0.08);
+      let hitChance = playerAcc / (targetEva * gapPenalty);
+      hitChance = Math.max(0.15, Math.min(1.0, hitChance)); // Min 15%, Max 100%
+
+      const { minDmg, maxDmg } = getMinMaxDamage();
+      let hitCount = 1;
+      let skillMult = 1.0;
+
+      if(isSkill) {
+        if(state.skills.hasTripleBook) {
+          hitCount = 3;
+          skillMult = 1.5 + (state.skills.lucky * 0.08);
+          playSound('triple');
+        } else {
+          hitCount = 2;
+          skillMult = 1.32 + (state.skills.lucky * 0.08);
+          playSound('lucky');
+        }
+      } else {
+        playSound('hit');
+      }
+
+      if(customMultiHits) {
+        hitCount = customMultiHits;
+        skillMult = state.skills.hasTripleBook ? (1.5 + state.skills.lucky * 0.08) : (1.32 + state.skills.lucky * 0.08);
+      }
+
+      let activeShuriken = getEquippedItem(state.eqShurikenUid);
+      let icon = '✴️';
+      let shurikenFile = 'subi';
+      if(activeShuriken) {
+        let base = SHURIKENS.find(s => s.id === activeShuriken.id);
+        if(base) {
+          icon = base.icon;
+          shurikenFile = base.file;
+        }
+      }
+
+      for(let i = 0; i < hitCount; i++) {
+        let isMiss = Math.random() > hitChance;
+        let isCrit = !isMiss && (Math.random() < (state.skills.crit * 0.01));
+        let critMult = isCrit ? (1.5 + Math.random() * 0.5) : 1.0;
+        let randDmg = isMiss ? 0 : Math.floor((minDmg + Math.random() * (maxDmg - minDmg)) * skillMult * critMult);
+
+        canvasProjectiles.push({
+          x: 150,
+          y: 180,
+          targetX: 580,
+          targetY: 180,
+          speed: 22,
+          icon: icon,
+          shurikenFile: shurikenFile,
+          damage: randDmg,
+          isMiss: isMiss,
+          isCrit: isCrit,
+          targetData: targetData,
+          penalty: penalty,
+          delay: i * 4,
+          rotation: 0
+        });
+      }
+
+      if(state.skills.shadow > 0 && state.level >= 30) {
+        let shadowMult = (0.2 + state.skills.shadow * 0.05);
+        for(let i = 0; i < hitCount; i++) {
+          let isMiss = Math.random() > hitChance;
+          let randDmg = isMiss ? 0 : Math.floor((minDmg + Math.random() * (maxDmg - minDmg)) * skillMult * shadowMult);
+          canvasProjectiles.push({
+            x: 130,
+            y: 190,
+            targetX: 580,
+            targetY: 180,
+            speed: 20,
+            icon: '👥',
+            shurikenFile: shurikenFile,
+            damage: randDmg,
+            isMiss: isMiss,
+            isCrit: false,
+            targetData: targetData,
+            penalty: penalty,
+            delay: (hitCount + i) * 4,
+            rotation: 0
+          });
+        }
+      }
+    }
+
+    function applyDamageToMonster(dmg, isCrit, isMiss, targetData, penalty) {
+      if(isMiss) {
+        canvasVisualHits.push({
+          x: 580 + (Math.random() * 40 - 20),
+          y: 160 + (Math.random() * 40 - 20),
+          damage: 'MISS',
+          isMiss: true,
+          isCrit: false,
+          life: 35
+        });
+        return;
+      }
+
+      state.currentMonsterHp -= dmg;
+      
+      canvasVisualHits.push({
+        x: 580 + (Math.random() * 40 - 20),
+        y: 160 + (Math.random() * 40 - 20),
+        damage: dmg,
+        isMiss: false,
+        isCrit: isCrit,
+        life: 30
+      });
+
+      if(state.currentMonsterHp <= 0) {
+        state.currentMonsterHp = 0;
+        onMonsterDefeated(targetData, penalty);
+      }
+    }
+
+    function fillTypingQueue() {
+      while(state.typingQueue.length < 5) {
+        const rand = TYPING_KEYS[Math.floor(Math.random() * TYPING_KEYS.length)];
+        state.typingQueue.push(rand);
+      }
+      renderTypingQueueUI();
+    }
+
+    function renderTypingQueueUI() {
+      const container = document.getElementById('typing-queue');
+      if(!container) return;
+      container.innerHTML = '';
+      state.typingQueue.forEach((k, idx) => {
+        const div = document.createElement('div');
+        div.className = `w-8 h-8 rounded border flex items-center justify-center font-black pixel-font text-sm transition-all ${idx === 0 ? 'bg-amber-500 border-amber-300 text-slate-950 scale-110 shadow-lg' : 'bg-slate-900 border-slate-700 text-slate-400 opacity-60'}`;
+        div.innerText = k;
+        container.appendChild(div);
+      });
+    }
+
+    function setNextWisdomVerse() {
+      state.currentWisdomIndex = Math.floor(Math.random() * TYPING_TEXTS.length);
+      document.getElementById('wisdom-target-text').innerText = TYPING_TEXTS[state.currentWisdomIndex];
+      document.getElementById('wisdom-input').value = '';
+    }
+
+    function addStatPoint(type) {
+      if(state.ap <= 0) return addLog('스탯 포인트(AP)가 부족합니다!', 'text-slate-500');
+      if(type === 'luk') {
+        state.luk++;
+        state.ap--;
+        addLog('✨ LUK +1 상승! (공격력 증가)', 'text-amber-300 font-bold');
+      } else if(type === 'dex') {
+        state.dex++;
+        state.ap--;
+        addLog('✨ DEX +1 상승! (명중률 +2 증가)', 'text-sky-300 font-bold');
+      }
+      updateUI();
+      saveGameProgress();
+    }
+
+    function showBgSelectorModal() {
+      document.getElementById('bg-selector-modal').classList.remove('hidden');
+    }
+
+    function closeBgSelectorModal() {
+      document.getElementById('bg-selector-modal').classList.add('hidden');
+    }
+
+    function setCustomBackground(bgMode) {
+      state.customBgSetting = bgMode;
+      addLog(`🌄 사냥터 배경 설정 변경: [${bgMode}]`, 'text-emerald-300 font-bold');
+      closeBgSelectorModal();
+      saveGameProgress();
+    }
+
+    function startEndlessWave() {
+      state.isEndlessMode = true;
+      state.isBossMode = false;
+      state.endlessTimeRemaining = 120; // 2 minutes limit
+      const hp = 50000 * Math.pow(1.35, state.endlessWave - 1);
+      state.currentMonsterHp = hp;
+      state.currentMonsterMaxHp = hp;
+      addLog(`⚔️ 무한 심층 던전 [${state.endlessWave}층] 시작! (제한시간 120초)`, 'text-red-400 font-bold');
+      updateUI();
+    }
+
+    function buyBlackMarket(type) {
+      if(type === 'atk') {
+        let cost = Math.floor(1000000 * Math.pow(3.0, state.blackMarket.atkLevel));
+        if(state.meso >= cost) {
+          state.meso -= cost;
+          state.blackMarket.atkLevel++;
+          addLog(`🏪 암시장 거래 성공: 영구 공격력 +5 강화 완료!`, 'text-purple-300 font-bold');
+        } else {
+          addLog(`메소가 부족합니다!`, 'text-slate-500');
+        }
+      } else if(type === 'luk') {
+        let cost = Math.floor(500000 * Math.pow(2.7, state.blackMarket.lukLevel));
+        if(state.meso >= cost) {
+          state.meso -= cost;
+          state.blackMarket.lukLevel++;
+          addLog(`🏪 암시장 거래 성공: 영구 LUK +10 투자 완료!`, 'text-sky-300 font-bold');
+        } else {
+          addLog(`메소가 부족합니다!`, 'text-slate-500');
+        }
+      }
+      updateUI();
+      saveGameProgress();
+    }
+
+    function checkAchievements() {
+      if(state.meso > state.stats.maxMesoReached) state.stats.maxMesoReached = state.meso;
+
+      let maxWeaponStar = 0, maxShurikenStar = 0, maxHatStar = 0, maxBodyStar = 0, maxGloveStar = 0;
+
+      if(state.eqWeaponUid) { let itm = getEquippedItem(state.eqWeaponUid); if(itm && itm.stars) maxWeaponStar = itm.stars; }
+      if(state.eqShurikenUid) { let itm = getEquippedItem(state.eqShurikenUid); if(itm && itm.stars) maxShurikenStar = itm.stars; }
+      if(state.eqHatUid) { let itm = getEquippedItem(state.eqHatUid); if(itm && itm.stars) maxHatStar = itm.stars; }
+      if(state.eqBodyUid) { let itm = getEquippedItem(state.eqBodyUid); if(itm && itm.stars) maxBodyStar = itm.stars; }
+      if(state.eqGloveUid) { let itm = getEquippedItem(state.eqGloveUid); if(itm && itm.stars) maxGloveStar = itm.stars; }
+
+      ACHIEVEMENTS_DEF.forEach(ach => {
+        if(!state.completedAchievements[ach.id]) {
+          let achieved = false;
+          if(ach.targetType === 'kills' && state.stats.totalMonstersKilled >= ach.targetVal) achieved = true;
+          if(ach.targetType === 'level' && state.level >= ach.targetVal) achieved = true;
+          if(ach.targetType === 'meso' && state.stats.maxMesoReached >= ach.targetVal) achieved = true;
+          if(ach.targetType === 'star') {
+            if(ach.targetCategory === 'weapon' && maxWeaponStar >= ach.targetVal) achieved = true;
+            if(ach.targetCategory === 'shuriken' && maxShurikenStar >= ach.targetVal) achieved = true;
+            if(ach.targetCategory === 'hat' && maxHatStar >= ach.targetVal) achieved = true;
+            if(ach.targetCategory === 'body' && maxBodyStar >= ach.targetVal) achieved = true;
+            if(ach.targetCategory === 'glove' && maxGloveStar >= ach.targetVal) achieved = true;
+          }
+
+          if(achieved) {
+            state.completedAchievements[ach.id] = true;
+            state.meso += ach.rewardMeso;
+            addLog(`🏆 [업적 달성] ${ach.name}! 칭호 [${ach.title}] 획득!`, 'text-amber-300 font-bold');
+            canvasPopups.push({ text: `업적 달성: ${ach.name}!`, color: '#f59e0b', life: 55 });
+          }
+        }
+      });
+    }
+
+    function onMonsterDefeated(targetData, penalty) {
+      let expGain = Math.floor((targetData.exp || 10) * penalty);
+      let expMult = state.buffs.expTimer > 0 ? 2 : 1;
+
+      let dropCouponMult = state.buffs.dropTimer > 0 ? 2 : 1;
+
+      let titleDropBonus = 0;
+      const titleEff = getActiveTitleEffect();
+      if(titleEff) {
+        if(titleEff.type === 'drop' || titleEff.type === 'all') titleDropBonus = titleEff.val;
+        if(titleEff.type === 'exp') expMult += titleEff.val;
+      }
+      
+      expGain = Math.floor(expGain * expMult);
+
+      let gridMult = 1.0 + (state.skills.grid * 0.1);
+      if(titleEff && (titleEff.type === 'meso' || titleEff.type === 'all')) gridMult += titleEff.val;
+
+      let mesoGain = Math.floor((targetData.meso || 10) * penalty * gridMult);
+
+      state.exp += expGain;
+      state.meso += mesoGain;
+      state.stats.totalMonstersKilled++;
+
+      canvasPopups.push({ text: `+${mesoGain} 메소`, color: '#f59e0b', life: 40 });
+
+      let reqExp = Math.floor(100 * Math.pow(1.25, state.level - 1));
+      if(state.exp >= reqExp) {
+        state.exp -= reqExp;
+        state.level++;
+        state.sp += 3;
+        state.ap += 5;
+        playSound('levelup');
+        addLog(`✨ LEVEL UP! Lv.${state.level} 달성! (AP +5, SP +3)`, 'text-amber-400 font-bold');
+        canvasPopups.push({ text: `LEVEL UP!`, color: '#38bdf8', life: 60, isBig: true });
+      }
+
+      if(state.isEndlessMode) {
+        // Trigger 5-minute floor buff
+        state.endlessBuffLevel = state.endlessWave;
+        state.endlessBuffTimer = 300; // 5 minutes
+        addLog(`🏆 무한 심층 [${state.endlessWave}층] 돌파 완료! 5분간 공격력+${state.endlessWave*8}, LUK+${state.endlessWave*12} 버프 발동!`, 'text-red-400 font-bold');
+
+        state.endlessWave++;
+        state.endlessTimeRemaining = 120; // reset 120s timer for next floor
+        const nextHp = 50000 * Math.pow(1.35, state.endlessWave - 1);
+        state.currentMonsterHp = nextHp;
+        state.currentMonsterMaxHp = nextHp;
+      } else {
+   targetData.drops.forEach(drop => {
+          // ✅ 칭호 보너스를 곱연산(1 + titleDropBonus)으로 적용
+          // 예: 기본 1% (0.01) * 칭호 15% (1.15) * 쿠폰배수 * 페널티 = 1.15%로 정확 계산!
+          let finalChance = drop.rate * (1 + titleDropBonus) * dropCouponMult * penalty;
+          finalChance = Math.min(0.75, finalChance); // 최대 상한선 75% 캡
+
+          if(Math.random() < finalChance) {
+            giveDropItem(drop.id);
+          }
+        });
+
+        if(state.isBossMode) {
+          addLog(`🏆 보스 [${targetData.name}] 처치 완료!`, 'text-emerald-400 font-bold');
+          state.isBossMode = false;
+          state.currentMonsterHp = STAGES[state.stageIndex].hp;
+          state.currentMonsterMaxHp = STAGES[state.stageIndex].hp;
+        } else {
+          state.currentMonsterHp = targetData.hp;
+          state.currentMonsterMaxHp = targetData.hp;
+        }
+      }
+
+      checkAchievements();
+      updateUI();
+      saveGameProgress();
+    }
+
+    function giveDropItem(itemId) {
+      if(itemId === 'triple_book') {
+        if(!state.skills.hasTripleBook) {
+          state.skills.hasTripleBook = true;
+          addLog(`📜 [스킬북: 트리플 스로우] 획득!`, 'text-purple-300 font-bold');
+          canvasPopups.push({ text: `스킬북 획득!`, color: '#c084fc', life: 50 });
+        } else {
+          state.meso += 100000;
+        }
+        return;
+      }
+
+      if(itemId.startsWith('agong') || itemId.startsWith('janggong') || itemId.startsWith('tuhaeng') || itemId.startsWith('jeonhaeng')) {
+        state.scrolls[itemId] = (state.scrolls[itemId] || 0) + 1;
+        const name = getItemName(itemId);
+        addLog(`📜 [${name}] 획득!`, 'text-sky-300 font-bold');
+        canvasPopups.push({ text: `${name} 획득!`, color: '#38bdf8', life: 40 });
+        return;
+      }
+
+      if(itemId === 'cider') {
+        state.inventory.push({ uid: getNextUid(), id: 'cider', type: 'use' });
+        addLog(`🍾 [사이다] 획득!`, 'text-amber-300');
+        return;
+      }
+
+      const isShuriken = SHURIKENS.some(s => s.id === itemId);
+      const isArmor = ARMORS.some(a => a.id === itemId);
+      const isWeapon = WEAPONS.some(w => w.id === itemId);
+
+      if(isShuriken) {
+        state.inventory.push({ uid: getNextUid(), id: itemId, type: 'use' });
+      } else if(isArmor || isWeapon) {
+        state.inventory.push({ uid: getNextUid(), id: itemId, type: 'eq', extraAtk: 0, extraStat: 0, stars: 0 });
+      }
+
+      const itemName = getItemName(itemId);
+      addLog(`✨ [${itemName}] 획득!`, 'text-emerald-400 font-bold');
+      canvasPopups.push({ text: `${itemName} 획득!`, color: '#4ade80', life: 45 });
+    }
+
+    function updateUI() {
+      document.getElementById('player-job').innerText = getPlayerJobTitle();
+      document.getElementById('player-level').innerText = `Lv. ${state.level}`;
+      document.getElementById('player-title').innerText = state.equippedTitle;
+      
+      const { minDmg, maxDmg } = getMinMaxDamage();
+      document.getElementById('player-stat-atk').innerText = `${minDmg} - ${maxDmg}`;
+      document.getElementById('player-luk-val').innerText = state.luk;
+      document.getElementById('player-dex-val').innerText = state.dex;
+      document.getElementById('player-acc-val').innerText = calculateTotalAccuracy();
+      document.getElementById('player-ap').innerText = state.ap;
+      document.getElementById('stat-luk-display').innerText = state.luk;
+      document.getElementById('stat-dex-display').innerText = state.dex;
+
+      const weaponItem = getEquippedItem(state.eqWeaponUid);
+      const shurikenItem = getEquippedItem(state.eqShurikenUid);
+      const hatItem = getEquippedItem(state.eqHatUid);
+      const bodyItem = getEquippedItem(state.eqBodyUid);
+
+      let badgeEmoji = '🥊';
+      if(weaponItem) {
+        let wBase = WEAPONS.find(w => w.id === weaponItem.id);
+        if(wBase) badgeEmoji = wBase.icon;
+      } else if(shurikenItem) {
+        let sBase = SHURIKENS.find(s => s.id === shurikenItem.id);
+        if(sBase) badgeEmoji = sBase.icon;
+      }
+      document.getElementById('avatar-weapon-badge').innerText = badgeEmoji;
+
+      let hatEmoji = '👒';
+      if(hatItem) {
+        let hBase = ARMORS.find(a => a.id === hatItem.id);
+        if(hBase) hatEmoji = hBase.icon;
+      }
+      document.getElementById('avatar-hat-badge').innerText = hatEmoji;
+
+      let bodyEmoji = '🥷';
+      if(bodyItem) {
+        let bBase = ARMORS.find(a => a.id === bodyItem.id);
+        if(bBase) bodyEmoji = bBase.icon;
+      }
+      document.getElementById('avatar-body-icon').innerText = bodyEmoji;
+
+      const titleEff = getActiveTitleEffect();
+      const activeTitleBuffEl = document.getElementById('active-title-buff');
+      if(titleEff) {
+        activeTitleBuffEl.innerText = `👑 칭호 효과 [${state.equippedTitle}]: ${titleEff.desc}`;
+        activeTitleBuffEl.classList.remove('hidden');
+      } else {
+        activeTitleBuffEl.classList.add('hidden');
+      }
+
+      const tripleBookStatus = document.getElementById('triple-book-status');
+      const tripleCard = document.getElementById('skill-triple-card');
+      if(state.skills.hasTripleBook) {
+        tripleBookStatus.innerText = '✅ 해금 완료 (3연속 사격)';
+        tripleBookStatus.className = 'text-[10px] px-1.5 py-0.2 bg-emerald-900/80 text-emerald-200 rounded border border-emerald-500/50';
+        tripleCard.className = 'bg-emerald-950/40 p-3 rounded border border-emerald-500/50 flex justify-between items-center text-xs';
+      } else {
+        tripleBookStatus.innerText = '🔒 미해금 (보스 드롭)';
+        tripleBookStatus.className = 'text-[10px] px-1.5 py-0.2 bg-purple-900/80 text-purple-200 rounded border border-purple-500/50';
+        tripleCard.className = 'bg-slate-900 p-3 rounded border border-purple-500/50 flex justify-between items-center text-xs';
+      }
+
+      let reqExp = Math.floor(100 * Math.pow(1.25, state.level - 1));
+      let pct = Math.min(100, Math.floor((state.exp / reqExp) * 100));
+      document.getElementById('exp-text').innerText = `${state.exp} / ${reqExp} (${pct}%)`;
+      document.getElementById('exp-bar').style.width = `${pct}%`;
+
+      document.getElementById('player-meso').innerText = `${state.meso.toLocaleString()} 메소`;
+
+      document.getElementById('buff-cider').classList.toggle('hidden', state.buffs.ciderTimer <= 0);
+      document.getElementById('buff-exp').classList.toggle('hidden', state.buffs.expTimer <= 0);
+      document.getElementById('buff-drop').classList.toggle('hidden', state.buffs.dropTimer <= 0);
+
+      const buffEndlessEl = document.getElementById('buff-endless');
+      if(state.endlessBuffTimer > 0 && state.endlessBuffLevel > 0) {
+        buffEndlessEl.classList.remove('hidden');
+        buffEndlessEl.innerText = `🔥 심층 ${state.endlessBuffLevel}층 버프 (+${state.endlessBuffLevel*8}공, +${state.endlessBuffLevel*12}LUK) [${state.endlessBuffTimer}초]`;
+      } else {
+        buffEndlessEl.classList.add('hidden');
+      }
+
+      const timerBadge = document.getElementById('endless-timer-badge');
+      if(state.isEndlessMode) {
+        timerBadge.classList.remove('hidden');
+        timerBadge.innerText = `⏰ 제한시간: ${state.endlessTimeRemaining}초`;
+        document.getElementById('stage-title').innerText = `⚔️ 무한 심층 던전`;
+        document.getElementById('stage-req-lv').innerText = `(${state.endlessWave}층 타임어택)`;
+        document.getElementById('monster-info').innerText = `🔥 심층 보스 (${state.endlessWave}층)`;
+      } else {
+        timerBadge.classList.add('hidden');
+        const currStage = STAGES[state.stageIndex];
+        if(!state.isBossMode) {
+          document.getElementById('stage-title').innerText = `🌲 ${currStage.name}`;
+          document.getElementById('stage-req-lv').innerText = `(권장 Lv.${currStage.reqLv} / 회피율:${currStage.eva})`;
+          document.getElementById('monster-info').innerText = `${currStage.emoji} ${currStage.monster} (EXP: ${currStage.exp} / 메소: ${currStage.meso})`;
+        } else {
+          const currBoss = BOSSES[state.bossIndex];
+          document.getElementById('stage-title').innerText = `👹 보스: ${currBoss.name}`;
+          document.getElementById('stage-req-lv').innerText = `(제한시간:${state.bossTimeRemaining}초 / 회피율:${currBoss.eva})`;
+          document.getElementById('monster-info').innerText = `${currBoss.emoji} ${currBoss.name} (EXP: ${currBoss.exp} / 메소: ${currBoss.meso})`;
+        }
+      }
+
+      document.getElementById('cnt-agong60').innerText = state.scrolls.agong60 || 0;
+      document.getElementById('cnt-agong10').innerText = state.scrolls.agong10 || 0;
+      document.getElementById('cnt-janggong60').innerText = state.scrolls.janggong60 || 0;
+      document.getElementById('cnt-janggong10').innerText = state.scrolls.janggong10 || 0;
+      document.getElementById('cnt-tuhaeng60').innerText = state.scrolls.tuhaeng60 || 0;
+      document.getElementById('cnt-tuhaeng10').innerText = state.scrolls.tuhaeng10 || 0;
+      document.getElementById('cnt-jeonhaeng60').innerText = state.scrolls.jeonhaeng60 || 0;
+      document.getElementById('cnt-jeonhaeng10').innerText = state.scrolls.jeonhaeng10 || 0;
+
+      LP_RECORDS.forEach(lp => {
+        const opt = document.getElementById(`opt-${lp.trackKey}`);
+        if(opt) {
+          if(state.stats.maxMesoReached >= lp.unlockMeso || state.unlockedLP[lp.id]) {
+            opt.disabled = false;
+            opt.innerText = `🎵 ${lp.name.replace('LP: ', '')} (봉인해제!)`;
+          }
+        }
+      });
+
+      document.getElementById('player-sp').innerText = state.sp;
+      document.getElementById('lv-lucky').innerText = state.skills.lucky;
+      document.getElementById('dmg-lucky').innerText = `${Math.floor(132 + (state.skills.lucky * 8))}%`;
+      document.getElementById('lv-haste').innerText = state.skills.haste;
+      document.getElementById('spd-haste').innerText = `${state.skills.haste * 10}%`;
+      document.getElementById('lv-crit').innerText = state.skills.crit;
+      document.getElementById('rate-crit').innerText = `${state.skills.crit * 1}%`;
+      document.getElementById('lv-shadow').innerText = state.skills.shadow;
+      document.getElementById('dmg-shadow').innerText = `${Math.floor(20 + (state.skills.shadow * 5))}%`;
+      document.getElementById('lv-grid').innerText = state.skills.grid;
+      document.getElementById('mult-grid').innerText = `${Math.floor(100 + (state.skills.grid * 10))}%`;
+      document.getElementById('lv-holy').innerText = state.skills.holy;
+      document.getElementById('cnt-holy').innerText = `${10 + state.skills.holy * 5}연속`;
+
+      document.getElementById('endless-wave-display').innerText = `${state.endlessWave} 층`;
+      const currentBuffInfoEl = document.getElementById('endless-current-buff-info');
+      if(state.endlessBuffTimer > 0 && state.endlessBuffLevel > 0) {
+        currentBuffInfoEl.innerText = `현재 버프: 심층 ${state.endlessBuffLevel}층 활성 (공격력 +${state.endlessBuffLevel*8}, LUK +${state.endlessBuffLevel*12}) - 남은시간: ${state.endlessBuffTimer}초`;
+      } else {
+        currentBuffInfoEl.innerText = `현재 적용 중인 심층 버프: 없음`;
+      }
+
+      document.getElementById('bm-atk-lv').innerText = state.blackMarket.atkLevel;
+      document.getElementById('bm-luk-lv').innerText = state.blackMarket.lukLevel;
+      
+      let nextAtkCost = Math.floor(1000000 * Math.pow(3.0, state.blackMarket.atkLevel));
+      let nextLukCost = Math.floor(500000 * Math.pow(2.7, state.blackMarket.lukLevel));
+      document.getElementById('bm-atk-cost').innerText = nextAtkCost.toLocaleString();
+      document.getElementById('bm-luk-cost').innerText = nextLukCost.toLocaleString();
+
+      renderStagesAndBosses();
+      renderInventory();
+      renderWeaponShop();
+      renderLPShop();
+      renderAchievementsUI();
+      updateStarforceUI();
+    }
+
+    function renderStagesAndBosses() {
+      const stageGrid = document.getElementById('stage-grid');
+      if(!stageGrid) return;
+      stageGrid.innerHTML = '';
+      STAGES.forEach((stg, idx) => {
+        const div = document.createElement('div');
+        const isActive = !state.isEndlessMode && !state.isBossMode && state.stageIndex === idx;
+        const isUnderLv = state.level < stg.reqLv;
+        div.className = `p-2 rounded border cursor-pointer flex flex-col justify-between text-xs ${isActive ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'}`;
+        div.onclick = () => {
+          state.isEndlessMode = false;
+          state.isBossMode = false;
+          state.stageIndex = idx;
+          state.currentMonsterHp = stg.hp;
+          state.currentMonsterMaxHp = stg.hp;
+          if(isUnderLv) addLog(`⚠️ 권장 레벨 미달! 경험치 및 드롭률 30% 페널티 적용`, 'text-red-400');
+          updateUI();
+          saveGameProgress();
+        };
+        div.innerHTML = `
+          <div class="font-bold flex justify-between">
+            <span>${stg.emoji} ${stg.name}</span>
+            <span class="${isUnderLv ? 'text-red-400' : 'text-slate-400'}">Lv.${stg.reqLv}</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">회피율: ${stg.eva} | ${stg.monster}</div>
+        `;
+        stageGrid.appendChild(div);
+      });
+
+      const bossGrid = document.getElementById('boss-grid');
+      if(!bossGrid) return;
+      bossGrid.innerHTML = '';
+      BOSSES.forEach((boss, idx) => {
+        const div = document.createElement('div');
+        const isActive = !state.isEndlessMode && state.isBossMode && state.bossIndex === idx;
+        const isUnderLv = state.level < boss.reqLv;
+        div.className = `p-2 rounded border cursor-pointer flex flex-col justify-between text-xs ${isActive ? 'bg-red-500/20 border-red-500 text-red-300' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'}`;
+        div.onclick = () => {
+          state.isEndlessMode = false;
+          state.isBossMode = true;
+          state.bossIndex = idx;
+          state.currentMonsterHp = boss.hp;
+          state.currentMonsterMaxHp = boss.hp;
+          state.bossTimeRemaining = boss.timeLimit;
+          if(isUnderLv) addLog(`⚠️ 보스 권장 레벨 미달! 페널티 및 높은 회피율 주의!`, 'text-red-400');
+          addLog(`👹 보스 [${boss.name}] 레이드 시작! (제한시간 ${boss.timeLimit}초, 회피율 ${boss.eva})`, 'text-red-400 font-bold');
+          updateUI();
+          saveGameProgress();
+        };
+        div.innerHTML = `
+          <div class="font-bold flex justify-between">
+            <span>${boss.emoji} ${boss.name}</span>
+            <span class="${isUnderLv ? 'text-red-400' : 'text-slate-400'}">Lv.${boss.reqLv}</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">회피: ${boss.eva} | HP: ${boss.hp.toLocaleString()}</div>
+        `;
+        bossGrid.appendChild(div);
+      });
+    }
+
+    function renderAchievementsUI() {
+      const grid = document.getElementById('achievement-grid');
+      if(!grid) return;
+      grid.innerHTML = '';
+      ACHIEVEMENTS_DEF.forEach(ach => {
+        const isCompleted = state.completedAchievements[ach.id];
+        const isEquipped = state.equippedTitle === ach.title;
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs ${isCompleted ? 'bg-amber-500/10 border-amber-500/60' : 'bg-slate-900 border-slate-700'}`;
+        
+        div.innerHTML = `
+          <div>
+            <div class="font-bold text-amber-300 flex items-center gap-1.5 flex-wrap">
+              <span>${ach.name}</span>
+              ${isCompleted ? '<span class="text-[9px] bg-emerald-500 text-slate-950 px-1 rounded font-bold">달성</span>' : ''}
+              <span class="text-[10px] text-sky-300 bg-sky-950 px-1.5 py-0.2 rounded border border-sky-500/30">칭호: [${ach.title}] (${ach.effect.desc})</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${ach.desc}</div>
+          </div>
+          ${isCompleted ? `
+            <button onclick="equipTitle('${ach.title}')" class="${isEquipped ? 'bg-emerald-600 text-white' : 'maple-btn text-white'} px-2.5 py-1 rounded font-bold text-[10px] whitespace-nowrap">
+              ${isEquipped ? '👑 장착 중' : '칭호 장착'}
+            </button>
+          ` : '<span class="text-[10px] text-slate-500">미달성</span>'}
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function equipTitle(title) {
+      state.equippedTitle = title;
+      addLog(`✨ 칭호 장착 변경: [${title}]`, 'text-amber-300 font-bold');
+      updateUI();
+      saveGameProgress();
+    }
+
+    function renderInventory() {
+      const grid = document.getElementById('inventory-grid');
+      if(!grid) return;
+      grid.innerHTML = '';
+
+      const isEqTab = state.selectedInventoryTab === 'eq';
+      const items = state.inventory.filter(i => isEqTab ? i.type === 'eq' : i.type === 'use');
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        const isSelected = state.selectedItemUids.has(item.uid);
+        const isEquipped = item.uid === state.eqShurikenUid || item.uid === state.eqWeaponUid || item.uid === state.eqHatUid || item.uid === state.eqBodyUid || item.uid === state.eqGloveUid;
+        
+        let icon = '📦';
+        let name = getItemName(item.id);
+        let spriteFile = null;
+        
+        const shuriken = SHURIKENS.find(s => s.id === item.id);
+        const weapon = WEAPONS.find(w => w.id === item.id);
+        const armor = ARMORS.find(a => a.id === item.id);
+        const lp = LP_RECORDS.find(l => l.id === item.id);
+
+        if(shuriken) { icon = shuriken.icon; spriteFile = shuriken.file; }
+        if(weapon) { icon = weapon.icon; spriteFile = weapon.file; }
+        if(armor) { icon = armor.icon; spriteFile = armor.file; }
+        if(item.id === 'cider') { icon = '🍾'; spriteFile = 'cider'; }
+        if(lp) { icon = lp.icon; spriteFile = lp.file; }
+
+        div.className = `relative p-2 rounded-lg border flex flex-col items-center justify-between text-center cursor-pointer transition-all ${isSelected ? 'border-amber-400 bg-amber-500/20' : 'border-slate-700 bg-slate-900 hover:border-slate-500'}`;
+        
+        div.onclick = () => {
+          if(state.multiSellMode) {
+            if(isEquipped || (item.stars && item.stars > 0) || (item.extraAtk && item.extraAtk > 0) || (item.extraStat && item.extraStat > 0)) {
+              addLog(`⚠️ 장착 중이거나 강화된 장비는 판매할 수 없습니다!`, 'text-amber-400');
+              return;
+            }
+            if(isSelected) state.selectedItemUids.delete(item.uid);
+            else state.selectedItemUids.add(item.uid);
+            renderInventory();
+          } else {
+            handleItemClick(item);
+          }
+        };
+
+        let starText = item.stars && item.stars > 0 ? `★${item.stars}` : '';
+        let scrollAtkText = item.extraAtk && item.extraAtk > 0 ? `+${item.extraAtk}공` : '';
+        let scrollStatText = item.extraStat && item.extraStat > 0 ? `+${item.extraStat}LUK` : '';
+
+        let spriteHtml = `<div class="text-2xl mt-1">${icon}</div>`;
+        if(spriteFile) {
+          const img = getSpriteImage(`inv_${spriteFile}`, spriteFile);
+          if(img && img.isLoaded) {
+            spriteHtml = `<img src="data/${spriteFile}.png" class="w-8 h-8 object-contain my-1">`;
+          }
+        }
+
+        let bonusBadges = '';
+        if(scrollAtkText || scrollStatText) {
+          bonusBadges += `<span class="text-[8px] bg-sky-950 text-sky-300 border border-sky-500/40 px-1 rounded font-bold">${scrollAtkText || scrollStatText}</span>`;
+        }
+
+        div.innerHTML = `
+          ${isEquipped ? '<span class="absolute top-1 left-1 text-[9px] bg-emerald-500 text-slate-950 px-1 rounded font-black">E</span>' : ''}
+          ${starText ? `<span class="absolute top-1 right-1 text-[9px] text-amber-400 font-bold">${starText}</span>` : ''}
+          ${spriteHtml}
+          <div class="text-[10px] font-bold text-slate-200 truncate w-full mt-1">${name}</div>
+          ${bonusBadges ? `<div class="mt-0.5 flex justify-center">${bonusBadges}</div>` : ''}
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function handleItemClick(item) {
+      if(item.id === 'cider') {
+        state.buffs.ciderTimer = 30;
+        const idx = state.inventory.findIndex(i => i.uid === item.uid);
+        if(idx !== -1) state.inventory.splice(idx, 1);
+        addLog(`🍾 사이다 사용! 30초간 공격력 +15!`, 'text-amber-300 font-bold');
+        updateUI();
+        saveGameProgress();
+        return;
+      }
+
+      const lp = LP_RECORDS.find(l => l.id === item.id);
+      if(lp) {
+        changeBGMTrack(lp.trackKey);
+        addLog(`💿 [${lp.name}] LP판 재생!`, 'text-purple-300 font-bold');
+        return;
+      }
+
+      const shuriken = SHURIKENS.find(s => s.id === item.id);
+      const weapon = WEAPONS.find(w => w.id === item.id);
+      const armor = ARMORS.find(a => a.id === item.id);
+
+      if(shuriken) {
+        state.eqShurikenUid = item.uid;
+        addLog(`✴️ 표창 장착: [${shuriken.name}]`, 'text-emerald-400');
+      } else if(weapon) {
+        state.eqWeaponUid = item.uid;
+        addLog(`🥊 아대 장착: [${weapon.name}]`, 'text-emerald-400');
+      } else if(armor) {
+        if(armor.category === 'hat') state.eqHatUid = item.uid;
+        if(armor.category === 'body') state.eqBodyUid = item.uid;
+        if(armor.category === 'glove') state.eqGloveUid = item.uid;
+        addLog(`🛡️ 방어구 장착: [${armor.name}]`, 'text-emerald-400');
+      }
+      updateUI();
+      saveGameProgress();
+    }
+
+    function renderWeaponShop() {
+      const grid = document.getElementById('shop-weapon-grid');
+      if(!grid) return;
+      grid.innerHTML = '';
+      WEAPONS.forEach(w => {
+        const div = document.createElement('div');
+        div.className = "p-2 bg-slate-900 border border-slate-700 rounded flex justify-between items-center text-xs";
+        
+        let spriteHtml = `<span class="mr-1">${w.icon}</span>`;
+        if(w.file) {
+          const img = getSpriteImage(`shop_${w.file}`, w.file);
+          if(img && img.isLoaded) {
+            spriteHtml = `<img src="data/${w.file}.png" class="w-6 h-6 object-contain inline mr-1">`;
+          }
+        }
+
+        div.innerHTML = `
+          <div>
+            <div class="font-bold text-amber-300 flex items-center">${spriteHtml} ${w.name} (Lv.${w.reqLv})</div>
+            <div class="text-[10px] text-slate-400">기본공 +${w.atk}</div>
+            <div class="text-amber-400 font-bold mt-0.5">${w.price.toLocaleString()} 메소</div>
+          </div>
+          <button onclick="buyShopWeapon('${w.id}')" class="maple-btn px-2.5 py-1 rounded text-white font-bold">구매</button>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function renderLPShop() {
+      const grid = document.getElementById('lp-shop-grid');
+      if(!grid) return;
+      grid.innerHTML = '';
+      LP_RECORDS.forEach(lp => {
+        const isUnlocked = state.stats.maxMesoReached >= lp.unlockMeso || state.unlockedLP[lp.id];
+        const div = document.createElement('div');
+        div.className = "p-2.5 bg-slate-900 border border-purple-500/40 rounded flex justify-between items-center text-xs";
+
+        let lpImgHtml = `<span class="text-2xl mr-2">${lp.icon}</span>`;
+        const img = getSpriteImage(`lp_${lp.file}`, lp.file);
+        if(img && img.isLoaded) {
+          lpImgHtml = `<img src="data/${lp.file}.png" class="w-8 h-8 object-contain mr-2">`;
+        }
+
+        div.innerHTML = `
+          <div class="flex items-center">
+            ${lpImgHtml}
+            <div>
+              <div class="font-bold text-purple-300">${lp.name}</div>
+              <div class="text-[10px] text-slate-400">${lp.desc}</div>
+              <div class="text-amber-400 font-bold mt-0.5">가격: 100억 메소</div>
+            </div>
+          </div>
+          <button onclick="buyLPRecord('${lp.id}')" class="${isUnlocked ? 'maple-btn-purple text-white' : 'bg-slate-800 text-slate-500'} px-3 py-1.5 rounded font-bold">
+            ${state.unlockedLP[lp.id] ? '소장 중' : '구매/해제'}
+          </button>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function buyLPRecord(lpId) {
+      const lp = LP_RECORDS.find(l => l.id === lpId);
+      if(!lp) return;
+      if(state.stats.maxMesoReached < lp.unlockMeso) {
+        return addLog(`누적 메소 100억 이상 달성 후 구매할 수 있습니다!`, 'text-red-400');
+      }
+      if(state.unlockedLP[lpId]) {
+        return addLog(`이미 보유 중인 LP판입니다.`, 'text-slate-400');
+      }
+      let cost = 10000000000;
+      if(state.meso >= cost) {
+        state.meso -= cost;
+        state.unlockedLP[lpId] = true;
+        state.inventory.push({ uid: getNextUid(), id: lp.id, type: 'use' });
+        addLog(`💿 [${lp.name}] LP판 구매 완료!`, 'text-purple-300 font-bold');
+        updateUI();
+        saveGameProgress();
+      } else {
+        addLog(`메소가 부족합니다! (필요: 100억 메소)`, 'text-slate-500');
+      }
+    }
+
+    function buyShopWeapon(weaponId) {
+      const w = WEAPONS.find(x => x.id === weaponId);
+      if(!w) return;
+      if(state.meso >= w.price) {
+        state.meso -= w.price;
+        state.inventory.push({ uid: getNextUid(), id: w.id, type: 'eq', extraAtk: 0, extraStat: 0, stars: 0 });
+        addLog(`🛍️ [${w.name}] 구매 완료!`, 'text-emerald-400');
+        updateUI();
+        saveGameProgress();
+      } else {
+        addLog(`메소가 부족합니다.`, 'text-slate-500');
+      }
+    }
+
+    function buyShopBuff(type, cost) {
+      if(state.meso >= cost) {
+        state.meso -= cost;
+        if(type === 'cider') state.buffs.ciderTimer = 30;
+        if(type === 'exp') state.buffs.expTimer = 60;
+        if(type === 'drop') state.buffs.dropTimer = 60;
+        addLog(`🛍️ 버프 구매 완료!`, 'text-purple-300 font-bold');
+        updateUI();
+        saveGameProgress();
+      } else {
+        addLog(`메소가 부족합니다.`, 'text-slate-500');
+      }
+    }
+
+    function buyScrollItem(scrollKey, cost) {
+      if(state.meso >= cost) {
+        state.meso -= cost;
+        state.scrolls[scrollKey] = (state.scrolls[scrollKey] || 0) + 1;
+        addLog(`📜 주문서 구매 성공!`, 'text-sky-300 font-bold');
+        updateUI();
+        saveGameProgress();
+      } else {
+        addLog(`주문서를 구매할 메소가 부족합니다!`, 'text-slate-500');
+      }
+    }
+
+    function useScroll(type, rate, val) {
+      let uid;
+      if(type === 'agong') uid = state.eqWeaponUid;
+      else if(type === 'janggong') uid = state.eqGloveUid;
+      else if(type === 'tuhaeng') uid = state.eqHatUid;
+      else if(type === 'jeonhaeng') uid = state.eqBodyUid;
+
+      if(!uid) return addLog('장비를 먼저 장착해 주세요!', 'text-red-400');
+
+      let scrollKey = `${type}${rate}`;
+      if((state.scrolls[scrollKey] || 0) > 0) {
+        state.scrolls[scrollKey]--;
+        let item = state.inventory.find(i => i.uid === uid);
+        if(Math.random() < (rate / 100)) {
+          if(type.includes('gong')) {
+            item.extraAtk = (item.extraAtk || 0) + val;
+            addLog(`✨ 주문서 강화 성공! (공격력 +${val})`, 'text-emerald-400 font-bold');
+          } else {
+            item.extraStat = (item.extraStat || 0) + val;
+            addLog(`✨ 주문서 강화 성공! (LUK +${val})`, 'text-emerald-400 font-bold');
+          }
+          canvasPopups.push({ text: '주문서 성공!', color: '#4ade80', life: 40 });
+        } else {
+          addLog('강화 실패... (옵션 유지)', 'text-slate-400');
+          canvasPopups.push({ text: '강화 실패', color: '#94a3b8', life: 40 });
+        }
+        updateUI();
+        saveGameProgress();
+      } else {
+        addLog('주문서가 부족합니다.', 'text-slate-500');
+      }
+    }
+
+    function selectStarTarget(category) {
+      state.starTargetCategory = category;
+      ['weapon', 'shuriken', 'hat', 'body', 'glove'].forEach(c => {
+        const btn = document.getElementById(`star-btn-${c}`);
+        if(c === category) {
+          btn.className = "px-2 py-1 rounded bg-amber-500 text-slate-950 font-bold";
+        } else {
+          btn.className = "px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold";
+        }
+      });
+      updateStarforceUI();
+    }
+
+    function getStarTargetItem() {
+      let uid;
+      if(state.starTargetCategory === 'weapon') uid = state.eqWeaponUid;
+      if(state.starTargetCategory === 'shuriken') uid = state.eqShurikenUid;
+      if(state.starTargetCategory === 'hat') uid = state.eqHatUid;
+      if(state.starTargetCategory === 'body') uid = state.eqBodyUid;
+      if(state.starTargetCategory === 'glove') uid = state.eqGloveUid;
+
+      if(!uid) return null;
+      return state.inventory.find(i => i.uid === uid);
+    }
+
+    // Hardcore Starforce Formula Logic
+    function getStarforceChanceAndCost(currStars) {
+      let rate = 95;
+      if(currStars < 10) {
+        rate = Math.max(50, 95 - currStars * 4.5);
+      } else if(currStars < 15) {
+        rate = Math.max(25, 45 - (currStars - 10) * 4);
+      } else if(currStars < 20) {
+        rate = Math.max(5, 20 - (currStars - 15) * 3);
+      } else {
+        // 20 ~ 30 Star: Extremely Hardcore (1% ~ 3%)
+        rate = Math.max(1, 3 - Math.floor((currStars - 20) * 0.2));
+      }
+
+      // Cost scales exponentially
+      let cost = Math.floor(100000 * Math.pow(1.38, currStars));
+
+      return { rate: Math.round(rate), cost };
+    }
+
+    function updateStarforceUI() {
+      const item = getStarTargetItem();
+      const nameEl = document.getElementById('star-item-name');
+      const starsEl = document.getElementById('star-stars-display');
+      const statEl = document.getElementById('star-stat-info');
+      const rateEl = document.getElementById('star-success-rate');
+      const costEl = document.getElementById('star-cost');
+      const reqEl = document.getElementById('star-shuriken-req');
+
+      if(!item) {
+        nameEl.innerText = '강화할 장비를 선택/장착해주세요';
+        starsEl.innerText = '☆☆☆☆☆ (0성)';
+        statEl.innerText = '현재 보너스 옵션: +0';
+        rateEl.innerText = '0%';
+        costEl.innerText = '0 메소';
+        reqEl.classList.add('hidden');
+        return;
+      }
+
+      const itemName = getItemName(item.id);
+      const currStars = item.stars || 0;
+      nameEl.innerText = `[${itemName}] (현재 ★${currStars} / 30성)`;
+
+      let starStr = '';
+      for(let i = 0; i < Math.min(15, currStars); i++) starStr += '★';
+      if(currStars > 15) starStr += ` (+${currStars - 15})`;
+      if(currStars === 0) starStr = '☆☆☆☆☆ (0성)';
+      starsEl.innerText = starStr;
+
+      let statBonus = (item.starBonusAtk || 0) + (item.starBonusStat || 0);
+      let scrollBonus = (item.extraAtk || 0) + (item.extraStat || 0);
+      statEl.innerText = `현재 보너스: 스타포스 +${statBonus} | 주문서 +${scrollBonus}`;
+
+      const { rate, cost } = getStarforceChanceAndCost(currStars);
+      rateEl.innerText = `${rate}%`;
+      costEl.innerText = `${cost.toLocaleString()} 메소`;
+
+      if(state.starTargetCategory === 'shuriken') {
+        reqEl.classList.remove('hidden');
+        const count = state.inventory.filter(i => i.id === item.id).length;
+        reqEl.innerText = `⚠️ 표창 별 달기 조건: 동일 표창 10개 이상 보유 (현재: ${count}개)`;
+      } else {
+        reqEl.classList.add('hidden');
+      }
+    }
+
+    function doStarforce() {
+      const item = getStarTargetItem();
+      if(!item) return addLog('강화할 장비를 먼저 장착하세요!', 'text-red-400');
+
+      const currStars = item.stars || 0;
+      if(currStars >= 30) return addLog('전설의 최대 30성에 도달했습니다!', 'text-amber-400 font-bold');
+
+      const { rate, cost } = getStarforceChanceAndCost(currStars);
+      if(state.meso < cost) return addLog('메소가 부족합니다!', 'text-slate-500');
+
+      if(state.starTargetCategory === 'shuriken') {
+        const sameCount = state.inventory.filter(i => i.id === item.id).length;
+        if(sameCount < 10) return addLog('동일 표창을 10개 이상 보유해야 별을 달 수 있습니다!', 'text-amber-400');
+      }
+
+      state.meso -= cost;
+
+      if(Math.random() < (rate / 100)) {
+        item.stars = currStars + 1;
+        
+        let tier = 1;
+        if(state.starTargetCategory === 'weapon') {
+          const w = WEAPONS.find(x => x.id === item.id);
+          if(w) tier = w.tier || 1;
+        }
+
+        let bonusInc = Math.floor(tier * 3 + (item.stars * 2.0));
+        if(state.starTargetCategory === 'hat' || state.starTargetCategory === 'body') {
+          item.starBonusStat = (item.starBonusStat || 0) + bonusInc;
+        } else {
+          item.starBonusAtk = (item.starBonusAtk || 0) + bonusInc;
+        }
+        addLog(`⭐ [스타포스 대성공!] ★${item.stars} 달성! (+${bonusInc} 상승)`, 'text-amber-300 font-bold');
+        canvasPopups.push({ text: `★${item.stars} 성공!`, color: '#f59e0b', life: 45 });
+      } else {
+        addLog(`⭐ 스타포스 실패.. (${rate}% 확률)`, 'text-slate-400');
+        canvasPopups.push({ text: '강화 실패', color: '#64748b', life: 35 });
+      }
+
+      checkAchievements();
+      updateUI();
+      saveGameProgress();
+    }
+
+    function doMaxStarforce() {
+      let count = 0;
+      while(count < 10) {
+        const item = getStarTargetItem();
+        if(!item || (item.stars || 0) >= 30) break;
+        const currStars = item.stars || 0;
+        const { rate, cost } = getStarforceChanceAndCost(currStars);
+        if(state.meso < cost) break;
+
+        if(state.starTargetCategory === 'shuriken') {
+          const sameCount = state.inventory.filter(i => i.id === item.id).length;
+          if(sameCount < 10) break;
+        }
+
+        state.meso -= cost;
+
+        if(Math.random() < (rate / 100)) {
+          item.stars = currStars + 1;
+          let tier = 1;
+          if(state.starTargetCategory === 'weapon') {
+            const w = WEAPONS.find(x => x.id === item.id);
+            if(w) tier = w.tier || 1;
+          }
+          let bonusInc = Math.floor(tier * 3 + (item.stars * 2.0));
+          if(state.starTargetCategory === 'hat' || state.starTargetCategory === 'body') {
+            item.starBonusStat = (item.starBonusStat || 0) + bonusInc;
+          } else {
+            item.starBonusAtk = (item.starBonusAtk || 0) + bonusInc;
+          }
+        }
+        count++;
+      }
+      addLog(`⚡ 10연속 스타포스 진행 완료!`, 'text-purple-300 font-bold');
+      checkAchievements();
+      updateUI();
+      saveGameProgress();
+    }
+
+    function upgradeSkill(skillKey) {
+      if(state.sp <= 0) return addLog('스킬 포인트(SP)가 부족합니다!', 'text-slate-500');
+      if(skillKey === 'shadow' && state.level < 30) return addLog('쉐도우 파트너는 Lv.30 이상 가능합니다!', 'text-amber-400');
+
+      state.sp--;
+      state.skills[skillKey]++;
+      addLog(`✨ 스킬 강화 완료!`, 'text-emerald-400');
+      updateUI();
+      saveGameProgress();
+    }
+
+    function showFileListModal() {
+      document.getElementById('file-list-modal').classList.remove('hidden');
+    }
+
+    function closeFileListModal() {
+      document.getElementById('file-list-modal').classList.add('hidden');
+    }
+
+    function showDropModal() {
+      const modal = document.getElementById('drop-modal');
+      const content = document.getElementById('drop-modal-content');
+      content.innerHTML = '';
+
+      const targetData = state.isBossMode ? BOSSES[state.bossIndex] : STAGES[state.stageIndex];
+      
+      const titleDiv = document.createElement('div');
+      titleDiv.className = "font-bold text-amber-300 border-b border-slate-700 pb-1 mb-2";
+      titleDiv.innerText = `[${targetData.name}] 드롭 확률표 (기본값)`;
+      content.appendChild(titleDiv);
+
+      targetData.drops.forEach(d => {
+        const div = document.createElement('div');
+        div.className = "flex justify-between bg-slate-950 p-2 rounded border border-slate-800";
+        const name = getItemName(d.id);
+        const ratePct = (d.rate * 100).toFixed(2);
+        div.innerHTML = `
+          <span class="text-slate-200 font-bold">${name}</span>
+          <span class="text-amber-400">${ratePct}%</span>
+        `;
+        content.appendChild(div);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeDropModal() {
+      document.getElementById('drop-modal').classList.add('hidden');
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawGameCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let drawnBg = false;
+      let bgFileName = null;
+
+      if (state.customBgSetting === 'auto') {
+        bgFileName = state.isBossMode ? `bg_boss${state.bossIndex}` : `bg_stage${state.stageIndex}`;
+      } else if (state.customBgSetting !== 'dark') {
+        bgFileName = `bg_${state.customBgSetting}`;
+      }
+
+      if (bgFileName) {
+        const bgImg = getSpriteImage(`bg_${bgFileName}`, bgFileName);
+        if (bgImg && bgImg.isLoaded) {
+          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+          drawnBg = true;
+        }
+      }
+
+      if (!drawnBg) {
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#020617');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 210);
+      ctx.lineTo(canvas.width, 210);
+      ctx.stroke();
+
+// 1. 플레이어 캐릭터 기본 바디
+      ctx.font = '48px sans-serif';
+      ctx.fillText('🥷', 120, 200);
+
+      // 2. 모자/투구 이미지 오버레이 (머리 중앙)
+      const hatItem = getEquippedItem(state.eqHatUid);
+      if (hatItem) {
+        let hatBase = ARMORS.find(a => a.id === hatItem.id);
+        let drawnHatImage = false;
+
+        if (hatBase && hatBase.file) {
+          const hatImg = getSpriteImage(`hat_${hatBase.file}`, hatBase.file);
+          if (hatImg && hatImg.isLoaded) {
+            ctx.drawImage(hatImg, 138, 140, 34, 34); 
+            drawnHatImage = true;
+          }
+        }
+
+        if (!drawnHatImage) {
+          let hatEmoji = hatBase ? hatBase.icon : '👒';
+          ctx.font = '24px sans-serif';
+          ctx.fillText(hatEmoji, 138, 180);
+        }
+      }
+
+      // 3. 한벌옷/가운 이미지 오버레이 (몸통 위치)
+      const bodyItem = getEquippedItem(state.eqBodyUid);
+      if (bodyItem) {
+        let bodyBase = ARMORS.find(a => a.id === bodyItem.id);
+        let drawnBodyImage = false;
+
+        if (bodyBase && bodyBase.file) {
+          const bodyImg = getSpriteImage(`body_${bodyBase.file}`, bodyBase.file);
+          if (bodyImg && bodyImg.isLoaded) {
+            // X: 128, Y: 168 (캐릭터 몸통 중앙 위치)
+            ctx.drawImage(bodyImg, 128, 178, 36, 36); 
+            drawnBodyImage = true;
+          }
+        }
+
+        if (!drawnBodyImage) {
+          let bodyEmoji = bodyBase ? bodyBase.icon : '🥋';
+          ctx.font = '22px sans-serif';
+          ctx.fillText(bodyEmoji, 130, 190);
+        }
+      }
+
+      // 4. 무기/아대 이미지 오버레이 (오른쪽 손 위치)
+      const weaponItem = getEquippedItem(state.eqWeaponUid);
+      if (weaponItem) {
+        let weaponBase = WEAPONS.find(w => w.id === weaponItem.id);
+        let drawnWeaponImage = false;
+
+        if (weaponBase && weaponBase.file) {
+          const weaponImg = getSpriteImage(`weapon_${weaponBase.file}`, weaponBase.file);
+          if (weaponImg && weaponImg.isLoaded) {
+            ctx.drawImage(weaponImg, 154, 188, 26, 26); 
+            drawnWeaponImage = true;
+          }
+        }
+
+        if (!drawnWeaponImage) {
+          let weaponEmoji = weaponBase ? weaponBase.icon : '🥊';
+          ctx.font = '20px sans-serif';
+          ctx.fillText(weaponEmoji, 154, 192);
+        }
+      }
+
+      let targetData;
+      if(state.isEndlessMode) {
+        targetData = { emoji: '🔥', file: 'zakum' };
+      } else {
+        targetData = state.isBossMode ? BOSSES[state.bossIndex] : STAGES[state.stageIndex];
+      }
+      
+      const monImg = getSpriteImage(`monster_${targetData.file}`, targetData.file);
+
+      if (monImg && monImg.isLoaded) {
+        const size = (state.isBossMode || state.isEndlessMode) ? 90 : 64;
+        ctx.drawImage(monImg, 580, 200 - size, size, size);
+      } else {
+        ctx.font = (state.isBossMode || state.isEndlessMode) ? '72px sans-serif' : '56px sans-serif';
+        ctx.fillText(targetData.emoji, 580, 200);
+      }
+
+      const hpPct = Math.max(0, state.currentMonsterHp / state.currentMonsterMaxHp);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(550, 80, 120, 10);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(550, 80, 120 * hpPct, 10);
+      ctx.strokeStyle = '#f87171';
+      ctx.strokeRect(550, 80, 120, 10);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.floor(state.currentMonsterHp)} / ${Math.floor(state.currentMonsterMaxHp)}`, 610, 75);
+
+      for(let i = canvasProjectiles.length - 1; i >= 0; i--) {
+        const p = canvasProjectiles[i];
+        if(p.delay > 0) {
+          p.delay--;
+          continue;
+        }
+
+        const dx = p.targetX - p.x;
+        const dy = p.targetY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if(dist <= p.speed) {
+          p.x = p.targetX;
+          p.y = p.targetY;
+          applyDamageToMonster(p.damage, p.isCrit, p.isMiss, p.targetData, p.penalty);
+          canvasProjectiles.splice(i, 1);
+        } else {
+          p.x += (dx / dist) * p.speed;
+          p.y += (dy / dist) * p.speed;
+          p.rotation = (p.rotation || 0) + 0.35;
+
+          let drawnSprite = false;
+          if (p.shurikenFile) {
+            const shurikenImg = getSpriteImage(`shuriken_${p.shurikenFile}`, p.shurikenFile);
+            if (shurikenImg && shurikenImg.isLoaded) {
+              ctx.save();
+              ctx.translate(p.x, p.y);
+              ctx.rotate(p.rotation);
+              ctx.drawImage(shurikenImg, -16, -16, 32, 32);
+              ctx.restore();
+              drawnSprite = true;
+            }
+          }
+
+          if (!drawnSprite) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.icon, 0, 0);
+            ctx.restore();
+          }
+        }
+      }
+
+      for(let i = canvasVisualHits.length - 1; i >= 0; i--) {
+        const hit = canvasVisualHits[i];
+        hit.y -= 0.8;
+        hit.life--;
+
+        if(hit.isMiss) {
+          ctx.font = 'bold 28px VT323, sans-serif';
+          ctx.fillStyle = '#94a3b8';
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeText('MISS', hit.x, hit.y);
+          ctx.fillText('MISS', hit.x, hit.y);
+        } else {
+          ctx.strokeStyle = hit.isCrit ? '#ef4444' : '#facc15';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(hit.x - 15, hit.y - 15);
+          ctx.lineTo(hit.x + 15, hit.y + 15);
+          ctx.stroke();
+
+          ctx.font = hit.isCrit ? 'black bold 34px VT323, sans-serif' : 'bold 26px VT323, sans-serif';
+          ctx.fillStyle = hit.isCrit ? '#ff2222' : '#fde047';
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeText(hit.damage, hit.x, hit.y);
+          ctx.fillText(hit.damage, hit.x, hit.y);
+        }
+
+        if(hit.life <= 0) canvasVisualHits.splice(i, 1);
+      }
+
+      for(let i = canvasPopups.length - 1; i >= 0; i--) {
+        const pop = canvasPopups[i];
+        pop.life--;
+
+        ctx.font = pop.isBig ? 'bold 28px sans-serif' : 'bold 14px sans-serif';
+        ctx.fillStyle = pop.color;
+        ctx.fillText(pop.text, 400, 130 - (50 - pop.life));
+
+        if(pop.life <= 0) canvasPopups.splice(i, 1);
+      }
+
+      ctx.textAlign = 'left';
+      requestAnimationFrame(drawGameCanvas);
+    }
+
+    window.addEventListener('load', () => {
+      const hasSaved = loadGameProgress();
+      fillTypingQueue();
+      setNextWisdomVerse();
+      
+      if(!hasSaved || state.inventory.length === 0) {
+        state.inventory.push({ uid: getNextUid(), id: 'subi', type: 'use' });
+        state.eqShurikenUid = state.inventory[0].uid;
+      }
+
+      const bgm = document.getElementById('game-bgm');
+      if (bgm) bgm.volume = 0.3;
+
+      updateUI();
+      drawGameCanvas();
+
+      canvas.addEventListener('click', () => attackMonster(false));
+
+      window.addEventListener('keydown', (e) => {
+        if(document.activeElement === document.getElementById('wisdom-input')) {
+          if(e.key === 'Enter') {
+            const val = document.getElementById('wisdom-input').value.trim();
+            const target = TYPING_TEXTS[state.currentWisdomIndex];
+            if(val === target) {
+              const burstHits = 10 + (state.skills.holy * 5);
+              addLog(`🧠 [지식 상식 폭격] ${burstHits}연속 난사!`, 'text-amber-200 font-bold');
+              attackMonster(true, burstHits);
+              setNextWisdomVerse();
+            } else {
+              addLog(`문장이 일치하지 않습니다.`, 'text-slate-500');
+            }
+          }
+          return;
+        }
+
+        const pressedKey = e.key.toUpperCase();
+        if(state.typingQueue.length > 0 && pressedKey === state.typingQueue[0]) {
+          state.typingQueue.shift();
+          fillTypingQueue();
+          attackMonster(true);
+        }
+      });
+
+      setInterval(() => {
+        attackMonster(false);
+      }, 2500 / (1 + state.skills.haste * 0.1));
+
+      // Timers Loop (1 Second)
+      setInterval(() => {
+        if(state.buffs.ciderTimer > 0) state.buffs.ciderTimer--;
+        if(state.buffs.expTimer > 0) state.buffs.expTimer--;
+        if(state.buffs.dropTimer > 0) state.buffs.dropTimer--;
+
+        // Endless Wave 5-Min Buff Timer
+        if(state.endlessBuffTimer > 0) {
+          state.endlessBuffTimer--;
+          if(state.endlessBuffTimer <= 0) {
+            state.endlessBuffLevel = 0;
+            addLog(`⏰ 심층 층수 버프가 만료되었습니다.`, 'text-slate-400');
+          }
+        }
+
+        // Endless Wave Time Attack Timer
+        if(state.isEndlessMode && state.endlessTimeRemaining > 0) {
+          state.endlessTimeRemaining--;
+          if(state.endlessTimeRemaining <= 0) {
+            addLog(`⏰ 무한 심층 제한시간(120초) 초과! 사냥터로 퇴장합니다.`, 'text-red-500 font-bold');
+            state.isEndlessMode = false;
+            state.currentMonsterHp = STAGES[state.stageIndex].hp;
+            state.currentMonsterMaxHp = STAGES[state.stageIndex].hp;
+          }
+        }
+
+        if(state.isBossMode && state.bossTimeRemaining > 0) {
+          state.bossTimeRemaining--;
+          if(state.bossTimeRemaining <= 0) {
+            addLog(`⏰ 보스 레이드 시간 초과!`, 'text-red-500 font-bold');
+            state.isBossMode = false;
+            state.currentMonsterHp = STAGES[state.stageIndex].hp;
+            state.currentMonsterMaxHp = STAGES[state.stageIndex].hp;
+          }
+        }
+        updateUI();
+      }, 1000);
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById(tabId).classList.remove('hidden');
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('opacity-60'));
+          btn.classList.remove('opacity-60');
+        });
+      });
+
+      document.getElementById('inv-tab-eq').onclick = () => {
+        state.selectedInventoryTab = 'eq';
+        document.getElementById('inv-tab-eq').className = "px-3 py-1 rounded bg-amber-500 text-slate-950 font-bold text-xs";
+        document.getElementById('inv-tab-use').className = "px-3 py-1 rounded bg-slate-700 text-slate-300 font-bold text-xs";
+        renderInventory();
+      };
+      document.getElementById('inv-tab-use').onclick = () => {
+        state.selectedInventoryTab = 'use';
+        document.getElementById('inv-tab-use').className = "px-3 py-1 rounded bg-amber-500 text-slate-950 font-bold text-xs";
+        document.getElementById('inv-tab-eq').className = "px-3 py-1 rounded bg-slate-700 text-slate-300 font-bold text-xs";
+        renderInventory();
+      };
+
+      document.getElementById('chk-multi-sell').onchange = (e) => {
+        state.multiSellMode = e.target.checked;
+        state.selectedItemUids.clear();
+        document.getElementById('btn-select-all').classList.toggle('hidden', !state.multiSellMode);
+        document.getElementById('btn-sell-selected').classList.toggle('hidden', !state.multiSellMode);
+        renderInventory();
+      };
+
+      document.getElementById('btn-select-all').onclick = () => {
+        const isEqTab = state.selectedInventoryTab === 'eq';
+        const items = state.inventory.filter(i => isEqTab ? i.type === 'eq' : i.type === 'use');
+        items.forEach(i => {
+          const isEquipped = i.uid === state.eqShurikenUid || i.uid === state.eqWeaponUid || i.uid === state.eqHatUid || i.uid === state.eqBodyUid || i.uid === state.eqGloveUid;
+          if(!isEquipped && (!i.stars || i.stars === 0) && (!i.extraAtk || i.extraAtk === 0) && (!i.extraStat || i.extraStat === 0)) {
+            state.selectedItemUids.add(i.uid);
+          }
+        });
+        renderInventory();
+      };
+
+      document.getElementById('btn-sell-selected').onclick = () => {
+        if(state.selectedItemUids.size === 0) return;
+        let totalGain = 0;
+        state.selectedItemUids.forEach(uid => {
+          const idx = state.inventory.findIndex(i => i.uid === uid);
+          if(idx !== -1) {
+            const item = state.inventory[idx];
+            const shuriken = SHURIKENS.find(s => s.id === item.id);
+            const weapon = WEAPONS.find(w => w.id === item.id);
+            const armor = ARMORS.find(a => a.id === item.id);
+            let val = 100;
+            if(shuriken) val = shuriken.sell;
+            if(weapon) val = weapon.sell;
+            if(armor) val = armor.sell;
+
+            totalGain += val;
+            state.inventory.splice(idx, 1);
+          }
+        });
+
+        state.meso += totalGain;
+        state.selectedItemUids.clear();
+        addLog(`💰 일괄 판매 완료! (+${totalGain.toLocaleString()} 메소)`, 'text-amber-300 font-bold');
+        updateUI();
+        saveGameProgress();
+      };
+    });
+  </script>
+</body>
+</html>
